@@ -1,0 +1,62 @@
+/* Home.css */
+.home-section {
+    margin-bottom: 30px;
+  }
+  
+  .home-section h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+  
+  .home-section ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .home-section ul li {
+    margin-bottom: 10px;
+  }
+  
+  .home-section ul li p {
+    margin: 0;
+  }
+  
+  .home-section ul li p:first-child {
+    font-weight: bold;
+  }
+  
+.games-list {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+.game-item {
+    width: calc(20% - 20px); /* 20% ширина + 20px відступ між блоками */
+    margin-right: 20px; /* відступ між блоками */
+    margin-bottom: 20px; /* відступ між рядками */
+  }
+  
+  .search-container {
+    margin-bottom: 20px;
+  }
+  
+  .search-container input[type="text"] {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  
+  .search-container button {
+    padding: 10px 20px;
+    background-color: #3273dc;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .search-container button:hover {
+    background-color: #1f5dc7;
+  }

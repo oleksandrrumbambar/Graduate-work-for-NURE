@@ -1,6 +1,7 @@
 // Header.jsx
 import React from 'react';
 import './header.css';
+import { Link } from "react-router-dom";
 
 function Header({ userRole }) {
   return (
@@ -10,13 +11,13 @@ function Header({ userRole }) {
       </div>
       <nav className="header__nav">
         <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/authorisation">Login</a></li>
-          {userRole === 'user' && <li><a href="/user">username</a></li>}
-          {userRole === 'user' && <li><a href="/library">Library</a></li>}
-          {userRole === 'admin' && <li><a href="/dashboard">Dashboard</a></li>}
-          {userRole === 'publisher' && <li><a href="/statistic">Statistics</a></li>}
-          <li><a href="/about">About</a></li>
+          <li><Link to="/">Home</Link></li>
+          <li><Link to="/login">Login</Link></li>
+          { /*{userRole === 'user' && <li><Link to="/user">username</Link></li>}
+          {userRole === 'user' && <li><Link to="/library">Library</Link></li>}
+          {userRole === 'admin' && <li><Link to="/dashboard">Dashboard</Link></li>}
+          {userRole === 'publisher' && <li><Link to="/statistic">Statistics</Link></li>} */}
+          <li><Link to="/about">About</Link></li>
         </ul>
       </nav>
     </header>

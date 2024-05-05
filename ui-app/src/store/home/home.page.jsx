@@ -8,7 +8,7 @@ const getRandomImage = () => {
     'https://cdn.akamai.steamstatic.com/steam/apps/275850/header.jpg?t=1701206599',
     'https://cdn.akamai.steamstatic.com/steam/apps/1091500/header.jpg?t=1701206599',
     'https://cdn.akamai.steamstatic.com/steam/apps/381210/header.jpg?t=1701206599',
-    'https://cdn.akamai.steamstatic.com/steam/apps/275850/header.jpg?t=1701206599', // Просто додавання кількох посилань для прикладу
+    'https://cdn.akamai.steamstatic.com/steam/apps/275850/header.jpg?t=1701206599', 
   ];
   const randomIndex = Math.floor(Math.random() * images.length);
   return images[randomIndex];

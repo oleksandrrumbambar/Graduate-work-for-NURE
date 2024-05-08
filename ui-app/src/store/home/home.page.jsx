@@ -1,6 +1,7 @@
 // Home.jsx
 import React from 'react';
 import './home.page.css';
+import { Link } from "react-router-dom";
 
 const getRandomImage = () => {
   const images = [
@@ -26,9 +27,11 @@ function Home() {
             <div className="games-list">
                 {Array.from({ length: 10 }, (_, i) => (
                 <div key={i} className="game-item">
+                  <Link to="/game">
                     <img src={getRandomImage()} alt={`Game ${i + 1}`} />
                     <p>Назва гри {i + 1}</p>
                     <p>Знижка: 50%</p>
+                  </Link>
                 </div>
           ))}
         </div>

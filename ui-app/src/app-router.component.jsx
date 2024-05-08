@@ -5,6 +5,7 @@ import About from './store/about/about.page';
 import Authorisation from './user/authorisation/login/authorisation.page';
 import Registration from './user/authorisation/registration/registration.page';
 import Game from './game/game.page';
+import Profile from './user/profile/profile.page';
 
 function AppRouter() {
   return (
@@ -15,6 +16,7 @@ function AppRouter() {
             <Route path="/login" element={<Authorisation />} />
             <Route path="/registration" element={<Registration />} />
             <Route path="/game" element={<Game />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </div>
   );

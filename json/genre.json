@@ -1,0 +1,184 @@
+[
+    {
+        "id_genre": 1,
+        "name_ukr": "Екшн",
+        "name_eng": "Action",
+        "description_ukr": "Жанр, в якому гравець керує персонажем та взаємодіє з оточуючим світом через швидкість та реакцію.",
+        "description_eng": "A genre in which the player controls a character and interacts with the game world through speed and reflexes."
+    },
+    {
+        "id_genre": 2,
+        "name_ukr": "Рольова гра (RPG)",
+        "name_eng": "Role-Playing Game (RPG)",
+        "description_ukr": "Жанр, в якому гравець відтворює роль вигаданого персонажа та взаємодіє з вигаданим світом, розвиваючи свого героя.",
+        "description_eng": "A genre in which the player assumes the role of a fictional character and interacts with an imaginary world, developing their character."
+    },
+    {
+        "id_genre": 3,
+        "name_ukr": "Стратегія",
+        "name_eng": "Strategy",
+        "description_ukr": "Жанр, в якому гравець приймає стратегічні рішення для досягнення мети в умовах обмежених ресурсів.",
+        "description_eng": "A genre in which the player makes strategic decisions to achieve a goal under conditions of limited resources."
+    },
+    {
+        "id_genre": 4,
+        "name_ukr": "Гра-головоломка",
+        "name_eng": "Puzzle",
+        "description_ukr": "Жанр, в якому гравець вирішує завдання та головоломки, часто з використанням логічних та креативних навичок.",
+        "description_eng": "A genre in which the player solves tasks and puzzles, often using logical and creative skills."
+    },
+    {
+        "id_genre": 5,
+        "name_ukr": "Шутер (стрілялка)",
+        "name_eng": "Shooter",
+        "description_ukr": "Жанр, в якому гравець керує вогнепальною зброєю та стріляє на ворогів або цілі.",
+        "description_eng": "A genre in which the player controls firearms and shoots at enemies or targets."
+    }
+    {
+        "id_genre": 6,
+        "name_ukr": "Пригодницька",
+        "name_eng": "Adventure",
+        "description_ukr": "Жанр, в якому гравець досліджує світ, вирішує завдання та розгадує загадки, щоб просуватися вперед у сюжеті.",
+        "description_eng": "A genre in which the player explores the world, solves tasks, and unravels mysteries to progress through the storyline."
+    },
+    {
+        "id_genre": 7,
+        "name_ukr": "Гонки",
+        "name_eng": "Racing",
+        "description_ukr": "Жанр, в якому гравець бере участь у змаганнях на швидкість, керуючи транспортним засобом.",
+        "description_eng": "A genre in which the player participates in speed competitions, controlling a vehicle."
+    },
+    {
+        "id_genre": 8,
+        "name_ukr": "Симулятор",
+        "name_eng": "Simulation",
+        "description_ukr": "Жанр, що імітує реальні аспекти життя або діяльності, дозволяючи гравцеві зануритися в віртуальний досвід.",
+        "description_eng": "A genre that simulates real-life aspects or activities, allowing the player to immerse themselves in a virtual experience."
+    },
+    {
+        "id_genre": 9,
+        "name_ukr": "Музична",
+        "name_eng": "Music",
+        "description_ukr": "Жанр, в якому гравець виконує музичні завдання або ритмічні ігри.",
+        "description_eng": "A genre in which the player performs musical tasks or rhythm games."
+    },
+    {
+        "id_genre": 10,
+        "name_ukr": "Бойовик",
+        "name_eng": "Beat 'em up",
+        "description_ukr": "Жанр, в якому гравець бореться з численними ворогами, використовуючи близькобойні прийоми та зброю.",
+        "description_eng": "A genre in which the player fights against numerous enemies using hand-to-hand combat techniques and weapons."
+    },
+    {
+        "id_genre": 11,
+        "name_ukr": "Будівництво (сандбокс)",
+        "name_eng": "Builders (Sandbox)",
+        "description_ukr": "Жанр, в якому гравець будує та модифікує світ за своїм власним розсудом.",
+        "description_eng": "A genre in which the player builds and modifies the world at their own discretion."
+    },
+    {
+        "id_genre": 12,
+        "name_ukr": "Виживання",
+        "name_eng": "Survival",
+        "description_ukr": "Жанр, в якому гравець бореться за виживання в небезпечних умовах, збираючи ресурси та уникуючи небезпеки.",
+        "description_eng": "A genre in which the player struggles for survival in hazardous conditions, gathering resources and avoiding dangers."
+    },
+    {
+        "id_genre": 13,
+        "name_ukr": "Карточна",
+        "name_eng": "Card",
+        "description_ukr": "Жанр, в якому гравець використовує карткові колоди для вирішення завдань або боротьби з противниками.",
+        "description_eng": "A genre in which the player uses card decks to solve tasks or battle opponents."
+    },
+    {
+        "id_genre": 14,
+        "name_ukr": "Масштабні онлайн багатокористувацькі ігри (MMO)",
+        "name_eng": "Massively Multiplayer Online (MMO)",
+        "description_ukr": "Жанр, в якому багато гравців з усього світу грають разом у великих віртуальних світах.",
+        "description_eng": "A genre in which many players from around the world play together in large virtual worlds."
+    },
+    {
+        "id_genre": 15,
+        "name_ukr": "Платформер",
+        "name_eng": "Platformer",
+        "description_ukr": "Жанр, в якому гравець керує персонажем, який пересувається та стрибає по рівнях, уникаючи перешкод.",
+        "description_eng": "A genre in which the player controls a character who moves and jumps across levels, avoiding obstacles."
+    }
+    {
+        "id_genre": 16,
+        "name_ukr": "Хоррор",
+        "name_eng": "Horror",
+        "description_ukr": "Жанр, в якому гравець переживає напруження та жах через страшні або жахливі події та ситуації.",
+        "description_eng": "A genre in which the player experiences tension and horror through frightening or horrifying events and situations."
+    },
+    {
+        "id_genre": 17,
+        "name_ukr": "Фантастика",
+        "name_eng": "Science Fiction",
+        "description_ukr": "Жанр, що розташований у майбутньому або на інших планетах, часто включає високі технології та екстравагантні сценарії.",
+        "description_eng": "A genre set in the future or on other planets, often featuring advanced technology and extravagant scenarios."
+    },
+    {
+        "id_genre": 18,
+        "name_ukr": "Симуляція життя",
+        "name_eng": "Life Simulation",
+        "description_ukr": "Жанр, в якому гравець відтворює життя персонажа або спільноти, керуючи різними аспектами їх повсякденного життя.",
+        "description_eng": "A genre in which the player simulates the life of a character or community, managing various aspects of their everyday life."
+    },
+    {
+        "id_genre": 19,
+        "name_ukr": "Інтерактивне кіно",
+        "name_eng": "Interactive Movie",
+        "description_ukr": "Жанр, який поєднує відеоігровий геймплей з елементами кіно, де гравець приймає рішення, які впливають на події.",
+        "description_eng": "A genre that combines gameplay with cinematic elements, where the player makes decisions that affect the events."
+    },
+    {
+        "id_genre": 20,
+        "name_ukr": "Фізична гра",
+        "name_eng": "Physics-based Game",
+        "description_ukr": "Жанр, в якому гравець взаємодіє з оточенням за допомогою фізичних законів, що дозволяє розв'язувати завдання.",
+        "description_eng": "A genre in which the player interacts with the environment using physical laws, allowing to solve puzzles."
+    },
+    {
+        "id_genre": 21,
+        "name_ukr": "Тактична гра",
+        "name_eng": "Tactical Game",
+        "description_ukr": "Жанр, в якому гравець робить стратегічні рішення та керує групою персонажів або ресурсами.",
+        "description_eng": "A genre in which the player makes strategic decisions and controls a group of characters or resources."
+    },
+    {
+        "id_genre": 22,
+        "name_ukr": "Платформер-розвага",
+        "name_eng": "Platformer-Adventure",
+        "description_ukr": "Жанр, що поєднує елементи платформера з елементами пригодницької гри, такі як дослідження та розв'язання загадок.",
+        "description_eng": "A genre that combines platformer elements with adventure game elements, such as exploration and puzzle-solving."
+    },
+    {
+        "id_genre": 23,
+        "name_ukr": "Економічна стратегія",
+        "name_eng": "Economic Strategy",
+        "description_ukr": "Жанр, в якому гравець керує економікою або бізнесом та приймає фінансові рішення для досягнення успіху.",
+        "description_eng": "A genre in which the player manages economy or business and makes financial decisions to achieve success."
+    },
+    {
+        "id_genre": 24,
+        "name_ukr": "Віртуальна реальність (VR)",
+        "name_eng": "Virtual Reality (VR)",
+        "description_ukr": "Жанр, в якому гравець занурюється в віртуальний світ і взаємодіє з ним через використання VR-технологій.",
+        "description_eng": "A genre in which the player immerses into a virtual world and interacts with it using VR technologies."
+    },
+    {
+        "id_genre": 25,
+        "name_ukr": "Аркадна стрілялка",
+        "name_eng": "Arcade Shooter",
+        "description_ukr": "Жанр, в якому гравець стріляє на ворогів у швидкій та динамічній грі, зазвичай з верхнього або бічного виду.",
+        "description_eng": "A genre in which the player shoots enemies in a fast-paced and dynamic game, usually from a top-down or side-view perspective."
+    },
+	{
+		"id_genre": 26,
+		"name_ukr": "Містобудування",
+		"name_eng": "City Building",
+		"description_ukr": "Жанр відеоігор, де гравець відтворює роль міського планувальника та мерії, будуючи та управляючи власним містом або населеним пунктом.",
+		"description_eng": "A genre of video games in which the player takes on the role of an urban planner and mayor, building and managing their own city or settlement."
+	}
+]

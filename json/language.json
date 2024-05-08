@@ -1,0 +1,77 @@
+[
+    {
+        "id_language": 1,
+        "name_ukr": "Англійська",
+        "name_eng": "English"
+    },
+    {
+        "id_language": 2,
+        "name_ukr": "Російська",
+        "name_eng": "Russian"
+    },
+    {
+        "id_language": 3,
+        "name_ukr": "Китайська (спрощена)",
+        "name_eng": "Simplified Chinese"
+    },
+    {
+        "id_language": 4,
+        "name_ukr": "Іспанська",
+        "name_eng": "Spanish"
+    },
+    {
+        "id_language": 5,
+        "name_ukr": "Німецька",
+        "name_eng": "German"
+    },
+    {
+        "id_language": 6,
+        "name_ukr": "Французька",
+        "name_eng": "French"
+    },
+    {
+        "id_language": 7,
+        "name_ukr": "Італійська",
+        "name_eng": "Italian"
+    },
+    {
+        "id_language": 8,
+        "name_ukr": "Португальська",
+        "name_eng": "Portuguese"
+    },
+    {
+        "id_language": 9,
+        "name_ukr": "Польська",
+        "name_eng": "Polish"
+    },
+    {
+        "id_language": 10,
+        "name_ukr": "Нідерландська",
+        "name_eng": "Dutch"
+    },
+    {
+        "id_language": 11,
+        "name_ukr": "Українська",
+        "name_eng": "Ukrainian"
+    },
+    {
+        "id_language": 12,
+        "name_ukr": "Турецька",
+        "name_eng": "Turkish"
+    },
+    {
+        "id_language": 13,
+        "name_ukr": "Японська",
+        "name_eng": "Japanese"
+    },
+    {
+        "id_language": 14,
+        "name_ukr": "Корейська",
+        "name_eng": "Korean"
+    },
+    {
+        "id_language": 15,
+        "name_ukr": "Чеська",
+        "name_eng": "Czech"
+    }
+]

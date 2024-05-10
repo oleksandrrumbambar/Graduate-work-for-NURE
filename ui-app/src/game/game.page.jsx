@@ -20,19 +20,17 @@ import IconButton from '@mui/joy/IconButton';
 import Link from '@mui/joy/Link';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
 function Game() {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
 
-  window.onload = function () {
-    var iframe = document.getElementById('myIframe');
-    if (iframe) {
-      iframe.onload = function () {
-        iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-      };
-    } else {
-      console.error("Не вдалося знайти іфрейм з ідентифікатором 'myIframe'.");
-    }
-  };
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
 
   return (
     <div className="game-page">
@@ -301,18 +299,20 @@ function Game() {
       <div>
         <div className='game-reviews'>
           <h3>Рецензії від друзів</h3>
-          <Card square elevation={0} style={{backgroundColor: "rgb(32, 32, 32)", color: "white"}}>
-            <CardHeader
-              avatar={<Avatar src="https://avatars.akamai.steamstatic.com/b6e7994994319dceaccb0906e717acb93777a948_full.jpg" />}
-              title='VDA_132'
-              subheader='Рекомендовано'
-            />
-            <CardContent>
-              <Typography variant="body1" component="p" color="white">
-                Я в Слов'янську жив як Кірю
-              </Typography>
-            </CardContent>
-          </Card>
+          <ThemeProvider theme={darkTheme}>
+            <Card square>
+              <CardHeader
+                avatar={<Avatar src="https://avatars.akamai.steamstatic.com/b6e7994994319dceaccb0906e717acb93777a948_full.jpg" />}
+                title='VDA_132'
+                subheader='Рекомендовано'
+              />
+              <CardContent>
+                <Typography variant="body1" component="p">
+                  Я в Слов'янську жив як Кірю
+                </Typography>
+              </CardContent>
+            </Card>
+          </ThemeProvider>
         </div>
         <hr></hr>
         <div className='game-reviews'>

@@ -132,6 +132,7 @@ function Game() {
               </div>
             </div>
             <div className="game-details">
+              <p>Легендарна японська серія від SEGA нарешті виходить на ПК. Пройдіться по Токіо та Осаці в ролі молодших якудза Кірю та Маджіми. Зануртесь у життя Японії 1980-х років з перших рядів, як ніхто інший у відеоіграх, з необмеженою частотою кадрів та роздільною здатністю 4K. Народжується легенда.</p>
               <p>Розробник: SEGA</p>
               <p>Видавець: SEGA</p>
               <p>Дата виходу: 1 серпня 2018</p>
@@ -198,7 +199,7 @@ function Game() {
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Typography variant="caption" component="div" color="textSecondary">
+                    <Typography variant="caption" component="div" color="white">
                       90
                     </Typography>
                   </Box>
@@ -218,7 +219,7 @@ function Game() {
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Typography variant="caption" component="div" color="textSecondary">
+                    <Typography variant="caption" component="div" color="white">
                       100
                     </Typography>
                   </Box>
@@ -238,7 +239,7 @@ function Game() {
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Typography variant="caption" component="div" color="textSecondary">
+                    <Typography variant="caption" component="div" color="white">
                       82
                     </Typography>
                   </Box>
@@ -300,14 +301,14 @@ function Game() {
       <div>
         <div className='game-reviews'>
           <h3>Рецензії від друзів</h3>
-          <Card>
+          <Card square elevation={0} style={{backgroundColor: "rgb(32, 32, 32)", color: "white"}}>
             <CardHeader
               avatar={<Avatar src="https://avatars.akamai.steamstatic.com/b6e7994994319dceaccb0906e717acb93777a948_full.jpg" />}
               title='VDA_132'
               subheader='Рекомендовано'
             />
             <CardContent>
-              <Typography variant="body1" component="p">
+              <Typography variant="body1" component="p" color="white">
                 Я в Слов'янську жив як Кірю
               </Typography>
             </CardContent>

@@ -1,6 +1,10 @@
 .game-page {
-    width: 80%;
+    width: 85%;
     margin: 0 auto;
+    background-color: rgb(28, 28, 28);
+    color: #fff;
+    padding-left: 5%;
+    padding-right: 5%;
 }
 
 .game-page li {
@@ -58,10 +62,11 @@
 }
 
 .game-details {
-    padding-left: 30px;
+    padding-left: 15px;
     padding-right: 5px;
     top: 10px;
     position: sticky;
+    text-align: left;
     z-index: 1;
 }
 

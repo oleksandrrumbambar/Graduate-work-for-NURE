@@ -1,0 +1,211 @@
+.game-page {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.game-page li {
+    list-style-type: none;
+}
+
+.game-page ul {
+    margin: 0;
+    padding: 0;
+}
+
+.game-main-information {
+    display: flex;
+}
+
+.game-description {
+    flex-grow: 1;
+    width: calc(100% - 365px);
+    margin-left: 20px;
+}
+
+.game-header {
+    width: 100%;
+}
+
+.game-header img {
+    width: 325px;
+    top: 10px;
+
+}
+
+.game-header h2 {
+    color: #fff;
+}
+
+.game-image-buy {
+    display: grid;
+    padding: 5px;
+    width: 325px;
+    top: 10px;
+    position: sticky;
+    background-color: rgb(28, 28, 28);
+    z-index: 1000;
+}
+
+.game-buy {
+    position: sticky;
+}
+
+.game-info {
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 100%;
+    top: 10px;
+}
+
+.game-details {
+    padding-left: 30px;
+    padding-right: 5px;
+    top: 10px;
+    position: sticky;
+    z-index: 1;
+}
+
+.game-gallery {
+    background-color: rgb(28, 28, 28);
+    padding: 5px;
+}
+
+.gallery-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-swiper {
+    height: calc(100% - 345px);
+
+}
+
+.gallery-swiper img {
+    width: calc(100vw * (16 / 9));
+    max-width: 100%;
+}
+
+.gallery-swiper video {
+    width: calc(100vw * (16 / 9));
+    max-width: 100%;
+}
+
+.gallery-swiper .swiper-wrapper {
+    transition-duration: 0ms;
+    transition-property: transform;
+    transform: translate3d(0px, 0px, 0px);
+    display: flex;
+    align-items: center;
+    transition-delay: 0ms;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    transition-timing-function: var(--swiper-wrapper-transition-timing-function, initial);
+    box-sizing: content-box;
+}
+
+.gallery-slide {}
+
+.div-suka {
+    width: 100%;
+    height: 100%;
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    /* Центрування по горизонталі */
+    align-items: center;
+}
+
+.button-add-to-cart {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.button-add-to-wishlist {
+    width: 100%;
+    background-color: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    margin-top: 20px;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.game-description-text {
+    text-align: left;
+}
+
+.game-language {
+    text-align: left;
+}
+
+.system-requirements {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.system-requirements h3 {
+    float: left;
+    width: 100%;
+}
+
+.system-requirements-col {
+    width: 33%;
+}
+
+.gallery-thumbs {
+    height: 20%;
+    box-sizing: border-box;
+    padding: 10px 0;
+}
+
+.friend-grid {
+    display: flex;
+    justify-content: left;
+}
+
+.photo-wrapper {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+}
+
+.photo-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.half-width {
+    width: 50%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.assessment-div {
+    justify-content: left;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.assessment-div p {
+    margin-left: 10px;
+}
+
+.game-reviews{
+    text-align: left;
+}

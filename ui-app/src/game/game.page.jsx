@@ -185,63 +185,74 @@ function Game() {
           <div className="container">
             <div className="half-width">
               <div className="assessment-div">
-                <Box position="relative" display="inline-flex">
-                  <CircularProgress determinate value={90} color="success" size="lg" variant="soft" />
-                  <Box
-                    top={0}
-                    left={0}
-                    bottom={0}
-                    right={0}
-                    position="absolute"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Typography variant="caption" component="div" color="white">
-                      90
-                    </Typography>
+                
+                  <Box position="relative" display="inline-flex">
+                    <CircularProgress determinate value={90} color="success" size="lg" variant="plain" />
+                    <Box
+                      top={0}
+                      left={0}
+                      bottom={0}
+                      right={0}
+                      position="absolute"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Typography variant="caption" component="div" color="white">
+                        90
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
+                
                 <p>Оцінка від крамниці</p>
               </div>
               <div className="assessment-div">
-                <Box position="relative" display="inline-flex">
-                  <CircularProgress determinate value={100} color="success" size="lg" variant="soft" />
-                  <Box
-                    top={0}
-                    left={0}
-                    bottom={0}
-                    right={0}
-                    position="absolute"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Typography variant="caption" component="div" color="white">
-                      100
-                    </Typography>
+                
+                  <Box position="relative" display="inline-flex">
+                    <CircularProgress determinate value={100} color="success" size="lg" variant="plain" />
+                    <Box
+                      top={0}
+                      left={0}
+                      bottom={0}
+                      right={0}
+                      position="absolute"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Typography variant="caption" component="div" color="white">
+                        100
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
+                
                 <p>Оцінка від друзів</p>
               </div>
               <div className="assessment-div">
-                <Box position="relative" display="inline-flex">
-                  <CircularProgress determinate value={82} color="success" size="lg" variant="soft" />
-                  <Box
-                    top={0}
-                    left={0}
-                    bottom={0}
-                    right={0}
-                    position="absolute"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Typography variant="caption" component="div" color="white">
-                      82
-                    </Typography>
+                
+                  <Box position="relative" display="inline-flex">
+
+                    <CircularProgress determinate value={82} color="success" size="lg" variant="plain" />
+
+                    <Box
+                      top={0}
+                      left={0}
+                      bottom={0}
+                      right={0}
+                      position="absolute"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      
+                      <Typography variant="caption" component="div" color="white">
+                        82
+                      </Typography>
+                      
+                    </Box>
+                    
                   </Box>
-                </Box>
+                
                 <p>Оцінка від cпільноти</p>
               </div>
             </div>

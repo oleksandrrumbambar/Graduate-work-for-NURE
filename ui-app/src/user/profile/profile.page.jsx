@@ -1,26 +1,45 @@
 import React from 'react';
+import { Avatar, Typography, Grid, Paper, Chip } from '@mui/material';
+import GameList from './game-list/game.list';
+import UserActionsMenu from './user-action-menu/user.action.menu';
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
+import FriendList from './friend-list/friend.list';
+
 
 function Profile() {
-    return ( 
-        <div className="user-profile">
-        <div className="user-header">
-          <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="User Avatar" />
-          <div className="user-info">
-            <h1>Slava_Ukrain_Hero_Slava</h1>
-            <p>Status: Online</p>
-            <p>Level: 50</p>
-          </div>
-        </div>
-        <div className="user-games">
-          <h2>Recent Games</h2>
-          <ul>
-            <li>Counter-Strike: Global Offensive</li>
-            <li>PlayerUnknown's Battlegrounds</li>
-            <li>Grand Theft Auto V</li>
-          </ul>
-        </div>
-        </div>
-    );
+  return (
+    <div className="user-profile">
+      <Grid container justifyContent="center" alignItems="center" spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} style={{ padding: 20 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={2}>
+                <Avatar alt="User Avatar" variant="square" src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" style={{ height: '100%', width: 'auto' }} />
+              </Grid>
+              <Grid item xs={12} md={9} container direction="column">
+                <Typography variant="h5">User Nickname <Chip label="Level 50" color="success" variant="outlined" /></Typography>
+                <Typography variant="body1">Country: Ukraine</Typography>
+                <Typography variant="body1" style={{ marginLeft: 10, fontStyle: 'italic' }}>Я люблю пироги</Typography>
+              </Grid>
+              <Grid xs={12} md={1} container direction="column" alignItems="flex-start">
+                <UserActionsMenu />
+              </Grid>
+              <Grid item xs={12} md={12} container direction="column" >
+                <Typography variant="h6" style={{ paddingBottom: "15px" }}>Друзі</Typography>
+                <FriendList />
+              </Grid>
+              <Grid item xs={12} md={12} container direction="column" >
+                <Typography variant="h6" style={{ paddingBottom: "15px" }}>Ігри в власності</Typography>
+                <GameList />
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+      </Grid>
+    </div>
+
+  );
 }
 
 export default Profile;

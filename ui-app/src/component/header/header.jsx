@@ -7,7 +7,7 @@ function Header({ userRole }) {
   return (
     <header className="header">
       <div className="header__logo">
-        <img src="https://store.akamai.steamstatic.com/public/shared/images/header/logo_steam.svg" alt="Steam Logo" />
+      {/*<img src="https://store.akamai.steamstatic.com/public/shared/images/header/logo_steam.svg" alt="Steam Logo" />*/}
       </div>
       <nav className="header__nav">
         <ul>

@@ -6,6 +6,7 @@ import Authorisation from './user/authorisation/login/authorisation.page';
 import Registration from './user/authorisation/registration/registration.page';
 import Game from './game/game.page';
 import Profile from './user/profile/profile.page';
+import Search from './store/home/search/search.page';
 
 function AppRouter() {
   return (
@@ -17,6 +18,7 @@ function AppRouter() {
             <Route path="/registration" element={<Registration />} />
             <Route path="/game" element={<Game />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path='/search' element={<Search />} />
           </Routes>
         </div>
   );

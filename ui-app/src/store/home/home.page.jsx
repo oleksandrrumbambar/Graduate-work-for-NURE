@@ -71,6 +71,7 @@ function Home() {
       <div className="search-container">
         <input type="text" placeholder="Пошук..." />
         <button>Пошук</button>
+        <button>Фільтр</button>
       </div>
       <section className="home-section">
         <h2>Топ 10 ігор по знижках</h2>

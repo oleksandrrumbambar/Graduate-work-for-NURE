@@ -4,11 +4,23 @@ import 'swiper/css';
 import { makeStyles } from '@mui/styles';
 import { Card, CardMedia, CardContent, Typography, Grid } from '@mui/material';
 import "./top.slider.css"
+import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
 
 function TopSlider({ games }) {
     return (
         <div className="swiper-container">
-            <Swiper slidesPerView={1} spaceBetween={10}>
+            <Swiper 
+                slidesPerView={1} 
+                effect={'fade'}
+                spaceBetween={30} 
+                loop={true}
+                autoplay={{
+                    delay: 5000,
+                    disableOnInteraction: false,
+                  }}
+                modules={[EffectFade, Autoplay, Pagination]}
+                 >
+                    
                 {games.map((game, index) => (
                     <SwiperSlide key={index}>
                         <Card className="swiper-root">

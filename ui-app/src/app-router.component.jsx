@@ -7,6 +7,8 @@ import Registration from './user/authorisation/registration/registration.page';
 import Game from './game/game.page';
 import Profile from './user/profile/profile.page';
 import Search from './store/home/search/search.page';
+import { Payment } from '@mui/icons-material';
+import PaymentPage from './payment/payment';
 
 function AppRouter() {
   return (
@@ -19,6 +21,7 @@ function AppRouter() {
             <Route path="/game" element={<Game />} />
             <Route path="/profile" element={<Profile />} />
             <Route path='/search' element={<Search />} />
+            <Route path='/payment' element={<PaymentPage />} />
           </Routes>
         </div>
   );

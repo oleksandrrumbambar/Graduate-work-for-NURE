@@ -45,6 +45,10 @@ function Authorisation() {
             <input type="password" id="password" name="Password" value={formData.password} onChange={handleInputChange} />
           </div>
           <button type="submit">Увійти</button>
+          <hr></hr>
+          <button type="submit">Створити акаунт</button>
+          <hr></hr>
+          <p style={{color: 'white'}}>Забули пароль?</p>
         </form>
       </div>
     );

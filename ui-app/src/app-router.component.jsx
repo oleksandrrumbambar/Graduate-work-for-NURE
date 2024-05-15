@@ -9,6 +9,8 @@ import Profile from './user/profile/profile.page';
 import Search from './store/home/search/search.page';
 import { Payment } from '@mui/icons-material';
 import PaymentPage from './payment/payment';
+import GameStatisticsPage from './store/statistic/statistic.store.page';
+import PublisherPage from './publisher/publisher.page';
 
 function AppRouter() {
   return (
@@ -22,6 +24,8 @@ function AppRouter() {
             <Route path="/profile" element={<Profile />} />
             <Route path='/search' element={<Search />} />
             <Route path='/payment' element={<PaymentPage />} />
+            <Route path='/statisticstore' element={<GameStatisticsPage />}/>
+            <Route path='/publisher' element={<PublisherPage />} />
           </Routes>
         </div>
   );

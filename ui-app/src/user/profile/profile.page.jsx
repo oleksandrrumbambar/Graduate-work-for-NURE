@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import FriendList from './friend-list/friend.list';
 import Activity from './activity/activity';
-import Statistic from './statistic/statistic';
+import Statistic from './statistic/statistic.user';
 
 function Profile() {
   const [activeTab, setActiveTab] = useState('games'); // Починаємо з відображення списку друзів

@@ -1,59 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import './library.page.css'; // Додамо файл стилів для оформлення
+import Sidebar from './sidebar/sidebar';
+import LibraryGrid from './grid/grid';
 
-function GameDataReceiver() {
-  const [gameData, setGameData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const games = [
+  { id: 1, name: 'The Witcher 3', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/header.jpg?t=1716793585', completion: '100%' },
+  { id: 2, name: 'Cyberpunk 2077', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg?t=1715334241', completion: '100%' },
+  { id: 3, name: 'Hades', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/header.jpg?t=1715722799', completion: '100%' },
+  { id: 4, name: 'Half-Life 2', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/220/header.jpg?t=1699003213', completion: '100%' },
+  { id: 5, name: 'Hotline Miami', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/219150/header.jpg?t=1686261983', completion: '100%' },
+  // Додайте інші ігри за потребою
+];
 
-  // Асинхронна функція для отримання даних про гру
-  const fetchGameData = async () => {
-    try {
-      const response = await fetch('https://example.com/api/games', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setGameData(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Використовуємо useEffect для виклику fetchGameData при завантаженні компонента
-  useEffect(() => {
-    fetchGameData();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
+function LibraryPage() {
   return (
-    <div>
-      {gameData ? (
-        <div>
-          <h1>{gameData.title}</h1>
-          <p>{gameData.description}</p>
-          {/* Додаткові дані про гру */}
-        </div>
-      ) : (
-        <div>No game data found.</div>
-      )}
+    <div className='library'>
+      <Sidebar />
+      <LibraryGrid />
     </div>
   );
 }
 
-export default GameDataReceiver;
+export default LibraryPage;
+

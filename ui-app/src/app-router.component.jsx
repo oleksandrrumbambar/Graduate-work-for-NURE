@@ -11,6 +11,7 @@ import { Payment } from '@mui/icons-material';
 import PaymentPage from './payment/payment';
 import GameStatisticsPage from './store/statistic/statistic.store.page';
 import PublisherPage from './publisher/publisher.page';
+import LibraryPage from './user/library/library.page';
 
 function AppRouter() {
   return (
@@ -26,6 +27,7 @@ function AppRouter() {
             <Route path='/payment' element={<PaymentPage />} />
             <Route path='/statisticstore' element={<GameStatisticsPage />}/>
             <Route path='/publisher' element={<PublisherPage />} />
+            <Route path='/library' element={<LibraryPage />} />
           </Routes>
         </div>
   );

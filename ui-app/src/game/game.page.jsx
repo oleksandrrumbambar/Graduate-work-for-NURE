@@ -85,7 +85,7 @@ function Game() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:8050/game?id=66629e219efeca30d2bf76eb')
+    axios.get('http://localhost:8050/game?id=66689e219efeca30d2bf76eb')
       .then(response => {
         setGameData(response.data);
         setIsLoading(false);

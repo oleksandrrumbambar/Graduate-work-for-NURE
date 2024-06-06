@@ -106,8 +106,9 @@ func main() {
 	// Підключення до MongoDB
 	connectToMongoDB()
 
-	// Обробник для маршруту /game
+	// Обробники для маршруту 
 	http.HandleFunc("/game", getGameHandler)
+	http.HandleFunc("/games", getAllGamesHandler)
 
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
@@ -155,4 +156,44 @@ func getGameHandler(w http.ResponseWriter, r *http.Request) {
 	// Відправка інформації про гру у відповідь
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(game)
+}
+
+func getAllGamesFromDB() ([]Game, error) {
+	// Пошук усіх ігор у базі даних
+	cursor, err := gameCollection.Find(context.Background(), bson.D{})
+	if err != nil {
+		return nil, fmt.Errorf("помилка під час пошуку ігор: %v", err)
+	}
+	defer cursor.Close(context.Background())
+
+	// Створення змінної для зберігання ігор
+	var games []Game
+
+	// Проходження по всім документам у курсорі та додавання ігор до змінної
+	for cursor.Next(context.Background()) {
+		var game Game
+		if err := cursor.Decode(&game); err != nil {
+			return nil, fmt.Errorf("помилка декодування ігор: %v", err)
+		}
+		games = append(games, game)
+	}
+
+	return games, nil
+}
+
+func getAllGamesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+		return
+	}
+
+	games, err := getAllGamesFromDB()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Помилка отримання ігор: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Відправка списку ігор у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(games)
 }

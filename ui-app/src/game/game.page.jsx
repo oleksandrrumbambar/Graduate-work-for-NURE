@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import axios from 'axios';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -25,16 +26,93 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 function Game() {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
+  const [gameData, setGameData] = useState({
+    _id: {
+      $oid: ""
+    },
+    name: "",
+    genre: [],
+    description: "",
+    short_description: "",
+    price: "",
+    developer: "",
+    publisher: "",
+    release_date: "",
+    rating: {
+      store: 0,
+      friends: 0,
+      community: 0
+    },
+    age_rating: "",
+    age_rating_image: "",
+    languages: {
+      voice: [],
+      text: []
+    },
+    system_requirements: {
+      minimum: {
+        os: "",
+        processor: "",
+        memory: "",
+        graphics: "",
+        storage: "",
+        notes: ""
+      },
+      recommended: {
+        os: "",
+        processor: "",
+        memory: "",
+        graphics: "",
+        storage: "",
+        notes: ""
+      },
+      ultra: {
+        os: "",
+        processor: "",
+        memory: "",
+        graphics: "",
+        storage: "",
+        notes: ""
+      }
+    },
+    gallery: [],
+    header_image: "",
+    friend_activity: {
+      own: [],
+      wishlist: []
+    }
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    axios.get('http://localhost:8050/game?id=66629e219efeca30d2bf76eb')
+      .then(response => {
+        setGameData(response.data);
+        setIsLoading(false);
+        })
+      .catch(error => {
+        console.error('Error fetching game data:', error);
+        setIsLoading(false);
+      });
+  }, []);
+  console.log(gameData);
   const darkTheme = createTheme({
     palette: {
       mode: 'dark',
     },
   });
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!gameData) {
+    return <div>Failed to load game data</div>;
+  }
+
   return (
     <div className="game-page">
-      <h1>Yakuza 0</h1>
+      <h1>{gameData.title}</h1>
       <div className="game-main-information">
         <div className="game-description">
           <div className="game-gallery">
@@ -56,25 +134,18 @@ function Game() {
               thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
               modules={[Keyboard, Pagination, Navigation, Thumbs]}
               className="gallery-swiper">
-              <SwiperSlide className="gallery-slide">
-                <video controls>
-                  <source src="https://cdn.akamai.steamstatic.com/steam/apps/256724036/movie480.webm?t=1533131986" type="video/mp4" />
-                  Ваш браузер не підтримує відео в HTML5.
-                </video></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_673bf61e19a07e6e0301b71b26d121281822c782.1920x1080.jpg?t=1713430221" alt="Yakuza 0" allowFullScreen /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_0b59c9984364e73a4d4413f50884d0ead3c81ab1.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide">
-                <div className="div-suka" >
-                  <img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_644c85a24f6d2710acc927072a30f70841ea955f.1920x1080.jpg?t=1713430221" alt="Yakuza 0" />
-                </div>
-              </SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_8c1431af6d1ae4a6ee3bdd10e326a7822713b24f.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_bcda5d10659c03acb555330d6059681c3cdc72ee.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_9b8553753141d10eca4a496d9187edb04221cd29.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_3bcb648adcef82e720f8e678dbe98c9a189cdb77.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_c2d149633c58b59db5c8947cb8f710d437e86e8d.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_6a9abd6c744125f0bd9958cd017e2cffcdf79a8f.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_0dc6c8021bef526e49c3a552f71542cc5842003d.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
+              {gameData.gallery?.map((mediaItem, index) => (
+                <SwiperSlide key={index} className="gallery-slide">
+                  {mediaItem.type === 'video' ? (
+                    <video controls>
+                      <source src={mediaItem.url} type="video/mp4" />
+                      Ваш браузер не підтримує відео в HTML5.
+                    </video>
+                  ) : (
+                    <img loading="lazy" src={mediaItem.url} alt={gameData.title} />
+                  )}
+                </SwiperSlide>
+              ))}
             </Swiper>
             <Swiper
               onSwiper={setThumbsSwiper}
@@ -86,55 +157,41 @@ function Game() {
               modules={[FreeMode, Navigation, Thumbs]}
               className="gallery-swiper"
             >
-              <SwiperSlide className="gallery-slide">
-                <video controls>
-                  <source src="https://cdn.akamai.steamstatic.com/steam/apps/256724036/movie480.webm?t=1533131986" type="video/mp4" />
-                  Ваш браузер не підтримує відео в HTML5.
-                </video></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_673bf61e19a07e6e0301b71b26d121281822c782.1920x1080.jpg?t=1713430221" alt="Yakuza 0" allowFullScreen /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_0b59c9984364e73a4d4413f50884d0ead3c81ab1.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide">
-                <div className="div-suka" >
-                  <img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_644c85a24f6d2710acc927072a30f70841ea955f.1920x1080.jpg?t=1713430221" alt="Yakuza 0" />
-                </div>
-              </SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_8c1431af6d1ae4a6ee3bdd10e326a7822713b24f.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_bcda5d10659c03acb555330d6059681c3cdc72ee.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_9b8553753141d10eca4a496d9187edb04221cd29.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_3bcb648adcef82e720f8e678dbe98c9a189cdb77.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_c2d149633c58b59db5c8947cb8f710d437e86e8d.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_6a9abd6c744125f0bd9958cd017e2cffcdf79a8f.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
-              <SwiperSlide className="gallery-slide"><img loading="lazy" src="https://cdn.akamai.steamstatic.com/steam/apps/638970/ss_0dc6c8021bef526e49c3a552f71542cc5842003d.1920x1080.jpg?t=1713430221" alt="Yakuza 0" /></SwiperSlide>
+              {gameData.gallery?.map((mediaItem, index) => (
+                <SwiperSlide key={index} className="gallery-slide">
+                  {mediaItem.type === 'video' ? (
+                    <video controls>
+                      <source src={mediaItem.url} type="video/mp4" />
+                      Ваш браузер не підтримує відео в HTML5.
+                    </video>
+                  ) : (
+                    <img loading="lazy" src={mediaItem.url} alt={gameData.title} />
+                  )}
+                </SwiperSlide>
+              ))}
             </Swiper>
           </div>
           <div className='game-description-text'>
-            <p>Жанр: Екшен, Пригодницька, Рольова гра</p>
+            <p>Жанр: {gameData.genre && gameData.genre.join(', ')}</p>
             <h2>Опис</h2>
-            <p>Блиск, гламур і нестримний декаданс 80-х повернулися в Yakuza 0.
-              Пройдіться по Токіо та Осаці разом з головним героєм Кадзумою Кірю та постійним учасником серіалу Горо Мадзімою. Грайте за Кадзуму Кірю і дізнайтеся, як він потрапляє у світ неприємностей, коли просте стягнення боргу йде не так, як треба, а його мішень вбивають. Потім взуйте сріблясті черевики Горо Мадзіми і досліджуйте його "нормальне" життя власника кабаре-клубу.
-              Миттєво перемикайтеся між трьома різними бойовими стилями і бийте всіляких бандитів, головорізів, хуліганів і покидьків. Виведіть бій на новий рівень, використовуючи об'єкти навколишнього середовища, такі як велосипеди, вивіски та двері автомобілів, для проведення комбінацій, що хрумтять кістками, і жорстоких нокаутів.
-              Бійки - не єдиний спосіб вбити час у Японії 1988 року: від дискотек і клубів для дівчат до класичних аркад SEGA - у детально опрацьованому, освітленому неоновим світлі є безліч розваг, що відволікають увагу.
-              Спілкуйтеся з колоритними мешканцями кварталу червоних ліхтарів: допоможіть домінатрікс садо-мазо освоїти свою професію або ж допоможіть вуличній артистці вчасно дістатися до туалету - на вас чекає 100 неймовірних історій.
-            </p>
+            <p>{gameData.description}</p>
           </div>
-
         </div>
         <div className="game-header">
           <div className="game-info">
             <div className="game-image-buy">
-              <img src="https://cdn.akamai.steamstatic.com/steam/apps/638970/header.jpg?t=1637700731" alt="Yakuza 0" />
+              <img src={gameData.header_image} alt={gameData.title} />
               <div className="game-buy">
-                <h2>Ціна 499 UAH</h2>
+                <h2>Ціна {gameData.price} UAH</h2>
                 <button className="button-add-to-cart">До кошика</button>
                 <button className="button-add-to-wishlist">До списку бажаного</button>
               </div>
             </div>
             <div className="game-details">
-              <p>Легендарна японська серія від SEGA нарешті виходить на ПК. Пройдіться по Токіо та Осаці в ролі молодших якудза Кірю та Маджіми. Зануртесь у життя Японії 1980-х років з перших рядів, як ніхто інший у відеоіграх, з необмеженою частотою кадрів та роздільною здатністю 4K. Народжується легенда.</p>
-              <p>Розробник: SEGA</p>
-              <p>Видавець: SEGA</p>
-              <p>Дата виходу: 1 серпня 2018</p>
-
+              <p>{gameData.short_description}</p>
+              <p>Розробник: {gameData.developer}</p>
+              <p>Видавець: {gameData.publisher}</p>
+              <p>Дата виходу: {gameData.release_date}</p>
             </div>
           </div>
         </div>
@@ -145,39 +202,19 @@ function Game() {
           <div className="game-friend-activity">
             <h4>Ця гра є у ваших друзів</h4>
             <div className="friend-grid">
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 1" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 2" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 3" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 4" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://avatars.akamai.steamstatic.com/b6e7994994319dceaccb0906e717acb93777a948_full.jpg" alt="Image 5" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 6" />
-              </div>
+              {gameData.friend_activity.own?.map((friend, index) => (
+                <div key={index} className="photo-wrapper">
+                  <img src={friend} alt={`Friend ${index + 1}`} />
+                </div>
+              ))}
             </div>
             <h4>Ця гра є у бажаному друзів</h4>
             <div className="friend-grid">
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 1" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 2" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 5" />
-              </div>
-              <div className="photo-wrapper">
-                <img src="https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/2543050/46f19cb9da5693db5b5a46adf75c1779362bac27.gif" alt="Image 6" />
-              </div>
+              {gameData.friend_activity.wishlist?.map((friend, index) => (
+                <div key={index} className="photo-wrapper">
+                  <img src={friend} alt={`Friend ${index + 1}`} />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -185,80 +222,69 @@ function Game() {
           <div className="container">
             <div className="half-width">
               <div className="assessment-div">
-                
-                  <Box position="relative" display="inline-flex">
-                    <CircularProgress determinate value={90} color="success" size="lg" variant="plain" />
-                    <Box
-                      top={0}
-                      left={0}
-                      bottom={0}
-                      right={0}
-                      position="absolute"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Typography variant="caption" component="div" color="white">
-                        90
-                      </Typography>
-                    </Box>
+                <Box position="relative" display="inline-flex">
+                  <CircularProgress determinate value={gameData.rating.store} color="success" size="lg" variant="plain" />
+                  <Box
+                    top={0}
+                    left={0}
+                    bottom={0}
+                    right={0}
+                    position="absolute"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Typography variant="caption" component="div" color="white">
+                      {gameData.rating.store}
+                    </Typography>
                   </Box>
-                
+                </Box>
                 <p>Оцінка від крамниці</p>
               </div>
               <div className="assessment-div">
-                
-                  <Box position="relative" display="inline-flex">
-                    <CircularProgress determinate value={100} color="success" size="lg" variant="plain" />
-                    <Box
-                      top={0}
-                      left={0}
-                      bottom={0}
-                      right={0}
-                      position="absolute"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Typography variant="caption" component="div" color="white">
-                        100
-                      </Typography>
-                    </Box>
+                <Box position="relative" display="inline-flex">
+                  <CircularProgress determinate value={gameData.rating.friends} color="success" size="lg" variant="plain" />
+                  <Box
+                    top={0}
+                    left={0}
+                    bottom={0}
+                    right={0}
+                    position="absolute"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Typography variant="caption" component="div" color="white">
+                      {gameData.rating.friends}
+                    </Typography>
                   </Box>
-                
+                </Box>
                 <p>Оцінка від друзів</p>
               </div>
               <div className="assessment-div">
-                
-                  <Box position="relative" display="inline-flex">
-
-                    <CircularProgress determinate value={82} color="success" size="lg" variant="plain" />
-
-                    <Box
-                      top={0}
-                      left={0}
-                      bottom={0}
-                      right={0}
-                      position="absolute"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      
-                      <Typography variant="caption" component="div" color="white">
-                        82
-                      </Typography>
-                      
-                    </Box>
-                    
+                <Box position="relative" display="inline-flex">
+                  <CircularProgress determinate value={gameData.rating.community} color="success" size="lg" variant="plain" />
+                  <Box
+                    top={0}
+                    left={0}
+                    bottom={0}
+                    right={0}
+                    position="absolute"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Typography variant="caption" component="div" color="white">
+                      {gameData.rating.community}
+                    </Typography>
                   </Box>
-                
+                </Box>
                 <p>Оцінка від cпільноти</p>
               </div>
             </div>
             <div className="half-width">
-              <img src='https://store.akamai.steamstatic.com/public/shared/images/game_ratings/PEGI/18.png?v=3' style={{ marginTop: "75px" }}></img>
-              <p>Віковий рейтинг: 16</p>
+              <img src={gameData.age_rating_image} style={{ marginTop: "75px" }} alt="Age Rating" />
+              <p>Віковий рейтинг: {gameData.age_rating}</p>
             </div>
           </div>
         </div>
@@ -267,70 +293,48 @@ function Game() {
       <hr></hr>
 
       <div className="game-language">
-        <p>Мова голос: Японська</p>
-        <p>Мова текст: Англійська, Японська</p>
+        <p>Мова голос: {gameData.languages.voice && gameData.languages.voice.join(', ')}</p>
+        <p>Мова текст: {gameData.languages.text && gameData.languages.text.join(', ')}</p>
       </div>
+
       <hr></hr>
       <div className="system-requirements">
-        <div className="system-requirements-col">
-          <h5>Мінімальні вимоги системи:</h5>
-          <ul>
-            <li>Операційна система: Windows 7</li>
-            <li>Процесор: Intel Core i5-3470</li>
-            <li>Оперативна пам'ять: 4 GB RAM</li>
-            <li>Відеокарта: NVIDIA GeForce GTX 560</li>
-            <li>Вільне місце на диску: 30 GB</li>
-            <li>Додаткові примітки: DirectX 11</li>
-          </ul>
-        </div>
-        <div className="system-requirements-col">
-          <h5>Рекомендовані вимоги системи:</h5>
-          <ul>
-            <li>Операційна система: Windows 10</li>
-            <li>Процесор: Intel Core i7-6700</li>
-            <li>Оперативна пам'ять: 8 GB RAM</li>
-            <li>Відеокарта: NVIDIA GeForce GTX 1070</li>
-            <li>Вільне місце на диску: 30 GB</li>
-            <li>Додаткові примітки: DirectX 11</li>
-          </ul>
-        </div>
-        <div className="system-requirements-col">
-          <h5>Ультра вимоги системи:</h5>
-          <ul>
-            <li>Операційна система: Windows 10</li>
-            <li>Процесор: Intel Core i9-9900K</li>
-            <li>Оперативна пам'ять: 16 GB RAM</li>
-            <li>Відеокарта: NVIDIA GeForce RTX 3080</li>
-            <li>Вільне місце на диску: 30 GB</li>
-            <li>Додаткові примітки: DirectX 12</li>
-          </ul>
-        </div>
+        {Object.entries(gameData.system_requirements).map(([key, value]) => (
+          <div className="system-requirements-col" key={key}>
+            <h5>{key === 'minimum' ? 'Мінімальні вимоги системи:' : key === 'recommended' ? 'Рекомендовані вимоги системи:' : 'Ультра вимоги системи:'}</h5>
+            <ul>
+              {Object.entries(value).map(([requirement, detail]) => (
+                <li key={requirement}>{requirement.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase())}: {detail}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
-      <hr></hr>
-      <div>
-        <div className='game-reviews'>
-          <h3>Рецензії від друзів</h3>
-          <ThemeProvider theme={darkTheme}>
-            <Card square>
+      <hr/>
+
+      {/* <div className="game-reviews">
+        <h4>Відгуки:</h4>
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          {gameData.reviews?.map((review, index) => (
+            <Card key={index} variant="outlined" sx={{ marginBottom: '20px' }}>
               <CardHeader
-                avatar={<Avatar src="https://avatars.akamai.steamstatic.com/b6e7994994319dceaccb0906e717acb93777a948_full.jpg" />}
-                title='VDA_132'
-                subheader='Рекомендовано'
+                avatar={<Avatar src={review.avatar} />}
+                title={review.user}
+                subheader={review.date}
+                action={
+                  <IconButton aria-label="add to favorites">
+                    <FavoriteBorderRoundedIcon />
+                  </IconButton>
+                }
               />
               <CardContent>
-                <Typography variant="body1" component="p">
-                  Я в Слов'янську жив як Кірю
-                </Typography>
+                <Typography variant="body1">{review.content}</Typography>
               </CardContent>
             </Card>
-          </ThemeProvider>
-        </div>
-        <hr></hr>
-        <div className='game-reviews'>
-          <h3>Рецензії від спільноти</h3>
-
-        </div>
-      </div>
+          ))}
+        </ThemeProvider>
+      </div> */}
     </div>
   );
 }

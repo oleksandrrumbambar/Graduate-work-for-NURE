@@ -20,12 +20,14 @@ type Game struct {
 	Name             string        `bson:"name" json:"name"`
 	Genre            []string      `bson:"genre" json:"genre"`
 	Description      string        `bson:"description" json:"description"`
+	ShortDescription string        `bson:"short_description" json:"short_description"`
 	Price            string        `bson:"price" json:"price"`
 	Developer        string        `bson:"developer" json:"developer"`
 	Publisher        string        `bson:"publisher" json:"publisher"`
 	ReleaseDate      string        `bson:"release_date" json:"release_date"`
 	Rating           Rating        `bson:"rating" json:"rating"`
 	AgeRating        string        `bson:"age_rating" json:"age_rating"`
+	AgeRatingImage   string        `bson:"age_rating_image" json:"age_rating_image"`
 	Languages        Languages     `bson:"languages" json:"languages"`
 	SystemRequirements SystemRequirements `bson:"system_requirements" json:"system_requirements"`
 	Gallery          []GalleryItem `bson:"gallery" json:"gallery"`

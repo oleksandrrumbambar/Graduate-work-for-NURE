@@ -35,7 +35,7 @@ function Registration() {
       };
 
       try {
-        const response = await axios.post('http://localhost:8000/register', user);
+        const response = await axios.post('http://localhost:8080/register', user);
         console.log('Відповідь від сервера:', response.data);
         setStep(1); // Після успішної реєстрації повертаємось до першого кроку
         setFormData({

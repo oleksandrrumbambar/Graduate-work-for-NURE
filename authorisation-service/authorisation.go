@@ -82,8 +82,8 @@ func main() {
 	// Використання cors для обробки запитів
 	handler := c.Handler(http.DefaultServeMux)
 
-	fmt.Println("Сервер запущено на порті 8000...")
-	http.ListenAndServe(":8000", handler)
+	fmt.Println("Сервер запущено на порті 8080...")
+	http.ListenAndServe(":8080", handler)
 }
 
 // Обробник для маршруту /login

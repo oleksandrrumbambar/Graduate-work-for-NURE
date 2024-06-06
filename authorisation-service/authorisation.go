@@ -1,31 +1,68 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"github.com/google/uuid"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/rs/cors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+var client *mongo.Client
+var userCollection *mongo.Collection
+
+func connectToMongoDB() {
+	var err error
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
+	if err != nil {
+		fmt.Println("Помилка створення MongoDB клієнта:", err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		fmt.Println("Помилка підключення до MongoDB:", err)
+		return
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		fmt.Println("Помилка пінгування MongoDB:", err)
+		return
+	}
+
+	fmt.Println("Підключення до MongoDB успішне")
+
+	userCollection = client.Database("Users").Collection("User")
+}
 
 // User структура представляє користувача
 type User struct {
-	Login    	string `json:"login"`
-	Email    	string `json:"email"`
-	Password 	string `json:"password"`
-	Country 	string `json:"country"`
-	FullName    string `json:"full_name"`
-	Postcode 	string `json:"postcode"`
-	GameName 	string `json:"game_name"`
-	UserID   	string	`json:"user_id"`
+	Login    string `json:"login"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Country  string `json:"country"`
+	FullName string `json:"full_name"`
+	Postcode string `json:"postcode"`
+	GameName string `json:"game_name"`
+	UserID   string `json:"user_id"`
 }
 
 var users []User
 
 func main() {
-	// Завантаження користувачів з JSON файлу
+	// Підключення до MongoDB
 	loadUsers()
 
 	// Обробник для маршруту /login
@@ -36,11 +73,11 @@ func main() {
 
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
-        AllowedOrigins: []string{"http://localhost:3000"},
-        AllowedMethods: []string{"GET", "POST"},
-        AllowedHeaders: []string{"Content-Type"},
-        AllowCredentials: true,
-    })
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	})
 
 	// Використання cors для обробки запитів
 	handler := c.Handler(http.DefaultServeMux)
@@ -70,17 +107,17 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if authUser != nil {
 
 		token := jwt.New(jwt.SigningMethodHS256)
-        claims := token.Claims.(jwt.MapClaims)
-        claims["user_id"] = authUser.UserID
-        // Підпис токена
-        tokenString, err := token.SignedString([]byte("1337fasola"))
-        if err != nil {
-            http.Error(w, "Помилка створення токена", http.StatusInternalServerError)
-            return
-        }
+		claims := token.Claims.(jwt.MapClaims)
+		claims["user_id"] = authUser.UserID
+		// Підпис токена
+		tokenString, err := token.SignedString([]byte("1337fasola"))
+		if err != nil {
+			http.Error(w, "Помилка створення токена", http.StatusInternalServerError)
+			return
+		}
 		response := map[string]interface{}{
 			"success": true,
-			"token": tokenString,
+			"token":   tokenString,
 		}
 		jsonResponse, _ := json.Marshal(response)
 		w.Header().Set("Content-Type", "application/json")
@@ -112,28 +149,19 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newUser.UserID = uuid.New().String()
-	// Додавання нового користувача до списку
-	users = append(users, newUser)
 
-	// Збереження користувачів у JSON файл
-	saveUsers()
+	err = addUser(newUser)
+	if err != nil {
+		http.Error(w, "Помилка додавання користувача до бази даних", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }
 
 // Завантаження користувачів з JSON файлу
 func loadUsers() {
-	data, err := ioutil.ReadFile("../json/user.json")
-	if err != nil {
-		fmt.Println("Помилка читання файлу:", err)
-		return
-	}
-
-	err = json.Unmarshal(data, &users)
-	if err != nil {
-		fmt.Println("Помилка розкодування JSON:", err)
-		return
-	}
+	connectToMongoDB()
 }
 
 // Збереження користувачів у JSON файл
@@ -144,7 +172,7 @@ func saveUsers() {
 		return
 	}
 
-	err =  ioutil.WriteFile("../json/user.json", data, 0644)
+	err = ioutil.WriteFile("../json/user.json", data, 0644)
 	if err != nil {
 		fmt.Println("Помилка запису у файл:", err)
 	}
@@ -152,10 +180,22 @@ func saveUsers() {
 
 // Перевірка аутифікації користувача за допомогою email та пароля
 func authenticateUser(email, password string) *User {
-	for _, u := range users {
-		if u.Email == email && u.Password == password {
-			return &u
-		}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var user User
+	err := userCollection.FindOne(ctx, bson.M{"email": email, "password": password}).Decode(&user)
+	if err != nil {
+		return nil
 	}
-	return nil
+
+	return &user
+}
+
+func addUser(user User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := userCollection.InsertOne(ctx, user)
+	return err
 }

@@ -74,7 +74,7 @@ body {
     object-fit: cover;
   }
   
-  .game-info {
+  /* .game-info {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -84,7 +84,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-  }
+  } */
   
   .game-name {
     font-size: 14px;

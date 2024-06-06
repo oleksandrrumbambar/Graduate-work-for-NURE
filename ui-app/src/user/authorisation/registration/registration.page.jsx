@@ -8,9 +8,9 @@ function Registration() {
     email: '',
     country: '',
     password: '',
-    fullName: '',
-    postalCode: '',
-    gameUsername: '',
+    full_name: '',
+    postcode: '',
+    game_name: '',
   });
   const [step, setStep] = useState(1); // Починаємо з першого кроку
 

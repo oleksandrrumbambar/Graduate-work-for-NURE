@@ -20,6 +20,7 @@ function Header() {
             <>
               <li><Link to={`/profile/${localStorage.getItem('id_user')}`}>{localStorage.getItem('user_name')}</Link></li>
               <li><Link to="/library">Library</Link></li>
+              <li><Link to="/friend">Friend</Link></li>
               <li><Link to="/"><button onClick={handleSignOut}>Sign Out</button></Link></li>
             </>
           ) : (

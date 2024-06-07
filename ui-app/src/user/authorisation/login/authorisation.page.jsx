@@ -38,8 +38,6 @@ function Authorisation() {
         console.log(localStorage.getItem('status'))
         console.log(localStorage.getItem('id_user'))
         console.log(localStorage.getItem('user_name'))
-
-        // Тут буде код з отриманою відповіддю, наприклад, перенаправити користувача на іншу сторінку
       } catch (error) {
         console.error('Помилка при відправленні запиту:', error);
       }

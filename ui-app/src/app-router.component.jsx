@@ -12,6 +12,7 @@ import PaymentPage from './payment/payment';
 import GameStatisticsPage from './store/statistic/statistic.store.page';
 import PublisherPage from './publisher/publisher.page';
 import LibraryPage from './user/library/library.page';
+import Friend from './user/friend/friends.page';
 
 function AppRouter() {
   return (
@@ -23,6 +24,7 @@ function AppRouter() {
             <Route path="/registration" element={<Registration />} />
             <Route path="/game/:id" element={<Game />} />
             <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/friend" element={<Friend />} />
             <Route path='/search' element={<Search />} />
             <Route path='/payment' element={<PaymentPage />} />
             <Route path='/statisticstore' element={<GameStatisticsPage />}/>

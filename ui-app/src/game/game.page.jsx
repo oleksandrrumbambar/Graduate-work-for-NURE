@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -83,9 +84,11 @@ function Game() {
     }
   });
   const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams();
 
   useEffect(() => {
-    axios.get('http://localhost:8050/game?id=66689e219efeca30d2bf76eb')
+    console.log(id)
+    axios.get(`http://localhost:8050/game?id=${id}`)
       .then(response => {
         setGameData(response.data);
         setIsLoading(false);

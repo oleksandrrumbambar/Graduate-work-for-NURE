@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -19,7 +20,6 @@ import AspectRatio from '@mui/joy/AspectRatio';
 import Box from '@mui/joy/Box';
 import CircularProgress from '@mui/joy/CircularProgress';
 import IconButton from '@mui/joy/IconButton';
-import Link from '@mui/joy/Link';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -192,8 +192,12 @@ function Game() {
             </div>
             <div className="game-details">
               <p>{gameData.short_description}</p>
-              <p>Розробник: {gameData.developer}</p>
-              <p>Видавець: {gameData.publisher}</p>
+              <p>
+                Розробник: <Link to={`/publisher/${gameData.developer}`}>{gameData.developer}</Link>
+              </p>
+              <p>
+                Видавець: <Link to={`/publisher/${gameData.publisher}`}>{gameData.publisher}</Link>  
+              </p>
               <p>Дата виходу: {gameData.release_date}</p>
             </div>
           </div>

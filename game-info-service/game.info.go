@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/rs/cors"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -112,7 +113,7 @@ func main() {
 	http.HandleFunc("/game", getGameHandler)
 	http.HandleFunc("/games", getAllGamesHandler)
 	http.HandleFunc("/topgames", getTop5GamesHandler)
-	
+	http.HandleFunc("/gamesbydeveloperorpublisher", getGamesByDeveloperOrPublisherHandler)
 
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
@@ -229,4 +230,54 @@ func getTop5GamesHandler(w http.ResponseWriter, r *http.Request) {
 	// Відправка списку топ 5 ігор у відповідь
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(topGames)
+}
+
+// Функція для отримання усіх ігор за іменем розробника або видавця
+func getGamesByDeveloperOrPublisher(name string) ([]Game, error) {
+    // Створення контексту та пошук усіх ігор за розробником або видавцем
+    cursor, err := gameCollection.Find(context.Background(), bson.M{"$or": []bson.M{{"developer": name}, {"publisher": name}}})
+    if err != nil {
+        return nil, fmt.Errorf("помилка під час пошуку ігор за розробником або видавцем: %v", err)
+    }
+    defer cursor.Close(context.Background())
+
+    // Створення змінної для зберігання ігор
+    var games []Game
+
+    // Проходження по всім документам у курсорі та додавання ігор до змінної
+    for cursor.Next(context.Background()) {
+        var game Game
+        if err := cursor.Decode(&game); err != nil {
+            return nil, fmt.Errorf("помилка декодування ігор: %v", err)
+        }
+        games = append(games, game)
+    }
+
+    return games, nil
+}
+
+// Обробник запиту для отримання усіх ігор за іменем розробника або видавця
+func getGamesByDeveloperOrPublisherHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Отримання параметру "name" з запиту
+    name := r.URL.Query().Get("name")
+    if name == "" {
+        http.Error(w, "Не вказано ім'я розробника або видавця", http.StatusBadRequest)
+        return
+    }
+
+    // Отримання усіх ігор за іменем розробника або видавця з бази даних
+    games, err := getGamesByDeveloperOrPublisher(name)
+    if err != nil {
+        http.Error(w, fmt.Sprintf("Помилка отримання ігор: %v", err), http.StatusInternalServerError)
+        return
+    }
+
+    // Відправка списку ігор у відповідь
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(games)
 }

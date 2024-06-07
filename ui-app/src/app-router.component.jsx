@@ -26,7 +26,7 @@ function AppRouter() {
             <Route path='/search' element={<Search />} />
             <Route path='/payment' element={<PaymentPage />} />
             <Route path='/statisticstore' element={<GameStatisticsPage />}/>
-            <Route path='/publisher' element={<PublisherPage />} />
+            <Route path='/publisher/:id' element={<PublisherPage />} />
             <Route path='/library' element={<LibraryPage   />} />
           </Routes>
         </div>

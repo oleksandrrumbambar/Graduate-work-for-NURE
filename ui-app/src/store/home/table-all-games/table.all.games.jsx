@@ -11,22 +11,22 @@ import Paper from '@material-ui/core/Paper';
 
 const useStyles = makeStyles({
     tableContainer: {
-      maxWidth: '100%',
-      marginTop: '20px',
+        maxWidth: '100%',
+        marginTop: '20px',
     },
     table: {
-      minWidth: '100%',
+        minWidth: '100%',
     },
     imageCell: {
-      width: '20%',
+        width: '20%',
     },
     nameCell: {
-      width: '70%',
+        width: '70%',
     },
     priceCell: {
-      width: '10%',
+        width: '10%',
     },
-  });
+});
 
 function TableAllGames() {
     const classes = useStyles();
@@ -46,20 +46,22 @@ function TableAllGames() {
                 <Table className={classes.table} aria-label="games table">
                     <TableBody>
                         {games.map((game) => (
-                            <TableRow key={game.id}>
-                                <TableCell className={classes.imageCell}>
-                                    <img src={game.header_image} alt={game.name} style={{ maxWidth: '100%' }} />
-                                </TableCell>
-                                <TableCell className={classes.nameCell}>
-                                    <Link to={`/game/${game.id}`}>{game.name}</Link>
-                                </TableCell>
-                                <TableCell>
-                                    {game.genre.join(', ')}
-                                </TableCell>
-                                <TableCell className={classes.priceCell}>
-                                    {game.price}
-                                </TableCell>
-                            </TableRow>
+                            <Link to={`/game/${game.id}`}>
+                                <TableRow key={game.id}>
+                                    <TableCell className={classes.imageCell}>
+                                        <img src={game.header_image} alt={game.name} style={{ maxWidth: '100%' }} />
+                                    </TableCell>
+                                    <TableCell className={classes.nameCell}>
+                                        <Link to={`/game/${game.id}`}>{game.name}</Link>
+                                    </TableCell>
+                                    <TableCell>
+                                        {game.genre.join(', ')}
+                                    </TableCell>
+                                    <TableCell className={classes.priceCell}>
+                                        {game.price}
+                                    </TableCell>
+                                </TableRow>
+                            </Link>
                         ))}
                     </TableBody>
                 </Table>

@@ -21,7 +21,7 @@ function AppRouter() {
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Authorisation />} />
             <Route path="/registration" element={<Registration />} />
-            <Route path="/game" element={<Game />} />
+            <Route path="/game/:id" element={<Game />} />
             <Route path="/profile" element={<Profile />} />
             <Route path='/search' element={<Search />} />
             <Route path='/payment' element={<PaymentPage />} />

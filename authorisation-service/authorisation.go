@@ -109,6 +109,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		token := jwt.New(jwt.SigningMethodHS256)
 		claims := token.Claims.(jwt.MapClaims)
 		claims["user_id"] = authUser.UserID
+		claims["user_name"] = authUser.GameName
 		fmt.Println(claims)
 		// Підпис токена
 		tokenString, err := token.SignedString([]byte("1337fasola"))

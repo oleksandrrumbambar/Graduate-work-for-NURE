@@ -46,7 +46,7 @@ function Profile() {
                   <Avatar alt="User Avatar" variant="square" src={userData.avatar} style={{ height: '100%', width: 'auto' }} />
                 </Grid>
                 <Grid item xs={12} md={9} container direction="column">
-                  <Typography variant="h5">{userData.full_name} <Chip label="Level 50" color="success" variant="outlined" /></Typography>
+                  <Typography variant="h5">{userData.game_name} <Chip label="Level 50" color="success" variant="outlined" /></Typography>
                   <Typography variant="body1">Country: {userData.country}</Typography>
                   <Typography variant="body1" style={{ marginLeft: 10, fontStyle: 'italic' }}>{userData.status}</Typography>
                 </Grid>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Typography, Grid, Avatar, Card, CardHeader, CardMedia, CardContent } from '@mui/material';
 
 function PublisherPage() {
@@ -54,6 +54,7 @@ function PublisherPage() {
             <Grid container spacing={3}>
                 {games.map(game => (
                     <Grid item key={game.id} xs={12} sm={6} md={4}>
+                        <Link to={`/game/${game.id}`}>
                         <Card>
                             <CardHeader title={game.name} />
                             <CardMedia
@@ -67,6 +68,7 @@ function PublisherPage() {
                                 </Typography>
                             </CardContent>
                         </Card>
+                        </Link>
                     </Grid>
                 ))}
             </Grid>

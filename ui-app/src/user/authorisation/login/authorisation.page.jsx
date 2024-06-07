@@ -3,6 +3,7 @@ import './authorisation.page.css';
 import axios from 'axios';
 import { Link, useNavigate  } from "react-router-dom";
 import { jwtDecode }  from 'jwt-decode';
+import { useAuth } from '../auth.context';
 
 function Authorisation() {
     const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ function Authorisation() {
         Password: ''
     });
     const navigate = useNavigate();
+    const { updateUserRole } = useAuth();
   
     const handleInputChange = (event) => {
       const { name, value } = event.target;
@@ -28,6 +30,14 @@ function Authorisation() {
         console.log('Розшифровані дані з токену:', decodedToken);
         // Перенаправлення на сторінку профілю користувача
         navigate(`/profile/${decodedToken.user_id}`);
+
+        localStorage.setItem('id_user', decodedToken.user_id);
+        updateUserRole('authorized');
+        localStorage.setItem('user_name', decodedToken.user_name);
+
+        console.log(localStorage.getItem('status'))
+        console.log(localStorage.getItem('id_user'))
+        console.log(localStorage.getItem('user_name'))
 
         // Тут буде код з отриманою відповіддю, наприклад, перенаправити користувача на іншу сторінку
       } catch (error) {

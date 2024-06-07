@@ -15,6 +15,12 @@ import (
 
 var client *mongo.Client
 var userCollection *mongo.Collection
+var libraryCollection *mongo.Collection
+
+var library struct {
+	UserID string   `bson:"user" json:"user"`
+	Games  []string `bson:"games" json:"games"`
+}
 
 func connectToMongoDB() {
     var err error
@@ -40,8 +46,9 @@ func connectToMongoDB() {
     }
 
     fmt.Println("Підключення до MongoDB успішне")
-	
+
 	userCollection = client.Database("Users").Collection("User")
+	libraryCollection = client.Database("Users").Collection("Library")
 }
 
 func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,12 +78,40 @@ func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(user)
 }
 
+func getGamesByUserIDHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Отримання параметру user_id з URL
+    userID := r.URL.Query().Get("user_id")
+    if userID == "" {
+        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+        return
+    }
+
+    // Пошук ігор у бібліотеці користувача за його user_id
+    err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
+    if err != nil {
+        http.Error(w, "Бібліотеку користувача не знайдено", http.StatusNotFound)
+        return
+    }
+
+    // Відправка інформації про ігри користувача у відповідь
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(library)
+}
+
 func main() {
     // Підключення до MongoDB
     connectToMongoDB()
 
     // Обробник для маршруту
     http.HandleFunc("/user", getUserInfoHandler)
+
+	// 
+	http.HandleFunc("/user/games", getGamesByUserIDHandler)
 
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{

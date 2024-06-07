@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Avatar, Typography, Grid, Paper, Chip } from '@mui/material';
 import GameList from './game-list/game.list';
 import UserActionsMenu from './user-action-menu/user.action.menu';
@@ -10,14 +11,18 @@ import Statistic from './statistic/statistic.user';
 import axios from 'axios';
 
 function Profile() {
+  const { id } = useParams();
   const [userData, setUserData] = useState(null);
+  const [userLibrary, setUserLibrary] = useState(null);
   const [activeTab, setActiveTab] = useState('games'); // Start with displaying the list of games
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('http://localhost:8070/user?user_id=6a734d95-cc82-43a0-9cdc-3ee8fbe84657');
+        const response = await axios.get(`http://localhost:8070/user?user_id=${id}`);
         setUserData(response.data);
+        const userGamesResponse = await axios.get(`http://localhost:8070/user/games?user_id=${id}`);
+        setUserLibrary(userGamesResponse.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -79,7 +84,7 @@ function Profile() {
                   {activeTab === 'games' && (
                     <>
                       <Typography variant="h6" style={{ paddingBottom: "15px" }}>Owned Games</Typography>
-                      <GameList />
+                      <GameList userLibrary={userLibrary} />
                     </>
                   )}
                   {activeTab === 'activity' && (

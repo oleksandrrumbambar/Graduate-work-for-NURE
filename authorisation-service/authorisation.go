@@ -49,14 +49,14 @@ func connectToMongoDB() {
 
 // User структура представляє користувача
 type User struct {
-	Login    string `json:"login"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Country  string `json:"country"`
-	FullName string `json:"full_name"`
-	Postcode string `json:"postcode"`
-	GameName string `json:"game_name"`
-	UserID   string `json:"user_id"`
+	Login    string `bson:"login" json:"login"`
+	Email    string `bson:"email" json:"email"`
+	Password string `bson:"password" json:"password"`
+	Country  string `bson:"country" json:"country"`
+	FullName string `bson:"full_name" json:"full_name"`
+	Postcode string `bson:"postcode" json:"postcode"`
+	GameName string `bson:"game_name" json:"game_name"`
+	UserID   string `bson:"user_id" json:"user_id"`
 }
 
 var users []User
@@ -109,6 +109,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		token := jwt.New(jwt.SigningMethodHS256)
 		claims := token.Claims.(jwt.MapClaims)
 		claims["user_id"] = authUser.UserID
+		fmt.Println(claims)
 		// Підпис токена
 		tokenString, err := token.SignedString([]byte("1337fasola"))
 		if err != nil {

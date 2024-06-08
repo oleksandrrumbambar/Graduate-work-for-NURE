@@ -20,6 +20,7 @@ function GameList({ userLibrary }) {
                 const gameData = gameResponses.map((response) => response.data);
                 setGames(gameData);
             } catch (error) {
+                setGames([]);
                 console.error('Error fetching games:', error);
             }
         };

@@ -10,7 +10,6 @@ function FriendList () {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        console.log("ID : "+id)
         if (!id) {
           console.error('User ID parameter is required');
           return;

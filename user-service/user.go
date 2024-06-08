@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -144,12 +145,16 @@ func main() {
 	http.HandleFunc("/addFriendRequest", addFriendRequestHandler)
 	http.HandleFunc("/confirmFriendRequest", confirmFriendRequestHandler)
 	http.HandleFunc("/removeFriend", removeFriendHandler)
-
+	http.HandleFunc("/friendRequests", getFriendRequestsHandler)
 	//
 	http.HandleFunc("/searchUser", searchUserHandler)
 
 	//
 	http.HandleFunc("/getFriends", getFriendsHandler)
+
+	// Перевірка статусу дружби
+	http.HandleFunc("/checkFriendship", checkFriendshipHandler)
+
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -172,7 +177,6 @@ func addFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var friend Friend
-	fmt.Println(r.Body)
 	err := json.NewDecoder(r.Body).Decode(&friend)
 	if err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -192,7 +196,6 @@ func addFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error adding friend request", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(friend)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Friend request added"))
 }
@@ -346,20 +349,32 @@ func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var friendsInfo []User
 	for _, friendID := range friendIDs {
-		var user User
-		err := userCollection.FindOne(ctx, bson.M{"user_id": friendID}).Decode(&user)
-		fmt.Println(err)
+		var friend Friend
+		err := friendCollection.FindOne(ctx, bson.M{"user_id_accept": userID, "user_id_sent": friendID}).Decode(&friend)
 		if err != nil {
 			http.Error(w, "Error finding friend info", http.StatusInternalServerError)
 			return
 		}
-		friendsInfo = append(friendsInfo, user)
+
+		// Перевіряємо, чи статус дружби не є "request"
+		if friend.FriendshipStatus != "request" {
+			var user User
+			err := userCollection.FindOne(ctx, bson.M{"user_id": friendID}).Decode(&user)
+			if err != nil {
+				http.Error(w, "Error finding user info", http.StatusInternalServerError)
+				return
+			}
+			friendsInfo = append(friendsInfo, user)
+		}
 	}
 
 	// Повернення інформації про друзів користувача у відповідь
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(friendsInfo)
 }
+
+
+
 
 
 func findFriendsByID(userID string) ([]string, error) {
@@ -395,4 +410,87 @@ func findFriendsByID(userID string) ([]string, error) {
 	}
 
 	return friendIDs, nil
+}
+
+func checkFriendshipHandler(w http.ResponseWriter, r *http.Request) {
+    // Перевірка методу запиту
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+    // Отримання ID з параметрів запиту
+    user1ID := r.URL.Query().Get("user_id1")
+    user2ID := r.URL.Query().Get("user_id2")
+    if user1ID == "" || user2ID == "" {
+        http.Error(w, "Both user IDs are required", http.StatusBadRequest)
+        return
+    }
+    // Перевірка чи існує "дружба" між користувачами за переданими ID
+    filter := bson.M{
+        "$or": []bson.M{
+            {"user_id_accept": user1ID, "user_id_sent": user2ID},
+            {"user_id_accept": user2ID, "user_id_sent": user1ID},
+        },
+    }
+    // Пошук "дружби" в колекції
+    var friendship bson.M
+    err := friendCollection.FindOne(context.Background(), filter).Decode(&friendship)
+    if err != nil {
+        if errors.Is(err, mongo.ErrNoDocuments) {
+            fmt.Fprintf(w, "No friendship between %s and %s", user1ID, user2ID)
+            return
+        }
+        http.Error(w, "Error checking friendship", http.StatusInternalServerError)
+        return
+    }
+    // Відправлення статусу дружби, якщо знайдено
+	w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(friendship); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func getFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userIDAccept := r.URL.Query().Get("user_id_accept")
+	if userIDAccept == "" {
+		http.Error(w, "User ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Знайти всі запити на дружбу з user_id_accept і статусом "request"
+	filter := bson.M{"user_id_accept": userIDAccept, "friendship_status": "request"}
+	cursor, err := friendCollection.Find(context.Background(), filter)
+	if err != nil {
+		http.Error(w, "Error finding friend requests", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	var friendRequests []Friend
+	if err = cursor.All(context.Background(), &friendRequests); err != nil {
+		http.Error(w, "Error decoding friend requests", http.StatusInternalServerError)
+		return
+	}
+
+	// Отримати інформацію про користувачів, які надіслали запит
+	var users []User
+	for _, friendRequest := range friendRequests {
+		var user User
+		err := userCollection.FindOne(context.Background(), bson.M{"user_id": friendRequest.UserIDSent}).Decode(&user)
+		if err != nil {
+			http.Error(w, "Error finding user info", http.StatusInternalServerError)
+			return
+		}
+		users = append(users, user)
+	}
+
+	// Повернення інформації про користувачів у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
 }

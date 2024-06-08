@@ -146,6 +146,7 @@ func main() {
 	http.HandleFunc("/confirmFriendRequest", confirmFriendRequestHandler)
 	http.HandleFunc("/removeFriend", removeFriendHandler)
 	http.HandleFunc("/friendRequests", getFriendRequestsHandler)
+	
 	//
 	http.HandleFunc("/searchUser", searchUserHandler)
 
@@ -349,32 +350,21 @@ func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var friendsInfo []User
 	for _, friendID := range friendIDs {
-		var friend Friend
-		err := friendCollection.FindOne(ctx, bson.M{"user_id_accept": userID, "user_id_sent": friendID}).Decode(&friend)
+		var user User
+		err := userCollection.FindOne(ctx, bson.M{"user_id": friendID}).Decode(&user)
+		fmt.Println(err)
 		if err != nil {
 			http.Error(w, "Error finding friend info", http.StatusInternalServerError)
 			return
 		}
-
-		// Перевіряємо, чи статус дружби не є "request"
-		if friend.FriendshipStatus != "request" {
-			var user User
-			err := userCollection.FindOne(ctx, bson.M{"user_id": friendID}).Decode(&user)
-			if err != nil {
-				http.Error(w, "Error finding user info", http.StatusInternalServerError)
-				return
-			}
-			friendsInfo = append(friendsInfo, user)
-		}
+		friendsInfo = append(friendsInfo, user)
 	}
+
 
 	// Повернення інформації про друзів користувача у відповідь
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(friendsInfo)
 }
-
-
-
 
 
 func findFriendsByID(userID string) ([]string, error) {

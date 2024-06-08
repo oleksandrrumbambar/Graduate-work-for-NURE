@@ -1,17 +1,20 @@
 package main
 
 import (
-    "context"
-    "encoding/json"
-    "fmt"
-    "net/http"
-    "time"
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"sort"
+	"time"
 
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rs/cors"
-    "go.mongodb.org/mongo-driver/bson"
+	
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var client *mongo.Client
@@ -29,6 +32,20 @@ type Friend struct {
 	UserIDAccept     string             `bson:"user_id_accept" json:"user_id_accept"`
 	UserIDSent       string             `bson:"user_id_sent" json:"user_id_sent"`
 	FriendshipStatus string             `bson:"friendship_status" json:"friendship_status"`
+}
+
+// User структура представляє користувача
+type User struct {
+	Login    string `bson:"login" json:"login"`
+	Email    string `bson:"email" json:"email"`
+	Password string `bson:"password" json:"password"`
+	Country  string `bson:"country" json:"country"`
+	FullName string `bson:"full_name" json:"full_name"`
+	Postcode string `bson:"postcode" json:"postcode"`
+	GameName string `bson:"game_name" json:"game_name"`
+	UserID   string `bson:"user_id" json:"user_id"`
+	Avatar	 string `bson:"avatar" json:"avatar"`
+	Status	 string `bson:"status" json:"status"` 	 
 }
 
 func connectToMongoDB() {
@@ -128,6 +145,11 @@ func main() {
 	http.HandleFunc("/confirmFriendRequest", confirmFriendRequestHandler)
 	http.HandleFunc("/removeFriend", removeFriendHandler)
 
+	//
+	http.HandleFunc("/searchUser", searchUserHandler)
+
+	//
+	
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -246,4 +268,55 @@ func removeFriendHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Friend deleted"))
+}
+
+func searchUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		http.Error(w, "Query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	users, err := searchUsers(query)
+	if err != nil {
+		http.Error(w, "Error searching users", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func searchUsers(query string) ([]User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Пошук користувачів за допомогою регулярних виразів для часткового збігу
+	filter := bson.M{"game_name": bson.M{"$regex": query, "$options": "i"}}
+	cursor, err := userCollection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var users []User
+	for cursor.Next(ctx) {
+		var user User
+		if err := cursor.Decode(&user); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	// Сортування результатів за релевантністю з використанням fuzzysearch
+	sort.Slice(users, func(i, j int) bool {
+		return fuzzy.RankMatch(query, users[i].GameName) < fuzzy.RankMatch(query, users[j].GameName)
+	})
+
+	return users, nil
 }

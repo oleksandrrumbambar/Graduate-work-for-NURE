@@ -1,35 +1,66 @@
-// Header.jsx
-import React, { useState } from 'react';
-import './header.css';
-import { Link } from "react-router-dom";
+import React from 'react';
+import { AppBar, Toolbar, Typography, Button, Link, Box } from '@mui/material';
 import { useAuth } from '../../user/authorisation/auth.context';
+import { Link as RouterLink } from 'react-router-dom';
+
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#1976d2',
+    },
+  },
+});
 
 function Header() {
   const { userRole, handleSignOut } = useAuth();
 
-
   return (
-    <header className="header">
-      <div className="header__logo">
-        {/*<img src="https://store.akamai.steamstatic.com/public/shared/images/header/logo_steam.svg" alt="Steam Logo" />*/}
-      </div>
-      <nav className="header__nav">
-        <ul>
-          <li><Link to="/">Home</Link></li>
+    <ThemeProvider theme={darkTheme}>
+      <AppBar position="sticky">
+        <Toolbar>
+          <Typography variant="h6" component="div">
+            <Link component={RouterLink} to="/" color="inherit" underline="none">
+              Home
+            </Link>
+          </Typography>
+          <Box sx={{ flexGrow: 1 }} />
           {userRole === 'authorized' ? (
             <>
-              <li><Link to={`/profile/${localStorage.getItem('id_user')}`}>{localStorage.getItem('user_name')}</Link></li>
-              <li><Link to="/library">Library</Link></li>
-              <li><Link to="/friend">Friend</Link></li>
-              <li><Link to="/"><button onClick={handleSignOut}>Sign Out</button></Link></li>
+              <Typography variant="h6" component="div">
+                <Button component={RouterLink} to={`/profile/${localStorage.getItem('id_user')}`} color="inherit" underline="none">
+                  {localStorage.getItem('user_name')}
+                </Button>
+              </Typography>
+              <Typography variant="h6" component="div">
+                <Button component={RouterLink} to="/library" color="inherit" underline="none">
+                  Library
+                </Button>
+              </Typography>
+              <Typography variant="h6" component="div">
+                <Button component={RouterLink} to="/friend" color="inherit" underline="none">
+                  Friend
+                </Button>
+              </Typography>
+              <Button color="inherit" onClick={handleSignOut}>
+                Sign Out
+              </Button>
             </>
           ) : (
-            <li><Link to="/login">Login</Link></li>
+            <Button component={RouterLink} to="/login" color="inherit">
+              Login
+            </Button>
           )}
-         <li><Link to="/about">About</Link></li>
-        </ul>
-      </nav>
-    </header>
+          <Typography variant="h6" component="div">
+            <Button component={RouterLink} to="/about" color="inherit" underline="none">
+              About
+            </Button>
+          </Typography>
+        </Toolbar>
+      </AppBar>
+    </ThemeProvider>
   );
 }
 

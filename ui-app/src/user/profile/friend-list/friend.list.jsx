@@ -1,30 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, Grid } from '@mui/material';
-
-const friends = [
-    {
-        id: 1,
-        name: 'Vda❤L',
-        avatar: 'https://avatars.akamai.steamstatic.com/b6e7994994319dceaccb0906e717acb93777a948_full.jpg'
-      },
-      {
-        id: 2,
-        name: 'morgan',
-        avatar: 'https://avatars.akamai.steamstatic.com/c4b0bedb28d6f262e5dbac0372e3618dd21eb9a4_full.jpg'
-      }
-];
+import { Link, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function FriendList () {
+  const [friends, setFriends] = useState([]);
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        console.log("ID : "+id)
+        if (!id) {
+          console.error('User ID parameter is required');
+          return;
+        }
+        const response = await axios.get(`http://localhost:8070/getFriends?user_id=${id}`);
+        setFriends(response.data);
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+      }
+    };
+
+    fetchFriends();
+  }, [id]); 
+
   return (
     <Grid container spacing={1}>
       {friends.map((friend) => (
         <Grid item key={friend.id}>
-          <Avatar
-            variant="square"
-            alt={friend.name}
-            src={friend.avatar}
-            sx={{ width: 50, height: 50 }}
-          />
+          <Link to={`/profile/${friend.user_id}`}>
+            <Avatar
+              variant="square"
+              alt={friend.game_name}
+              src={friend.avatar}
+              sx={{ width: 50, height: 50 }}
+            />
+          </Link>
         </Grid>
       ))}
     </Grid>

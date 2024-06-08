@@ -13,7 +13,7 @@ function Profile() {
   const { id } = useParams();
   const [userData, setUserData] = useState(null);
   const [userLibrary, setUserLibrary] = useState(null);
-  const [activeTab, setActiveTab] = useState('games'); // Start with displaying the list of games
+  const [activeTab, setActiveTab] = useState('games');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -28,7 +28,7 @@ function Profile() {
     };
 
     fetchUserData();
-  }, [id]); // Додано `id` до залежностей
+  }, [id]);
 
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);

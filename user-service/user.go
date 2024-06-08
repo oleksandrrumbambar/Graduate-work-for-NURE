@@ -10,7 +10,7 @@ import (
 
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rs/cors"
-	
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -44,34 +44,34 @@ type User struct {
 	Postcode string `bson:"postcode" json:"postcode"`
 	GameName string `bson:"game_name" json:"game_name"`
 	UserID   string `bson:"user_id" json:"user_id"`
-	Avatar	 string `bson:"avatar" json:"avatar"`
-	Status	 string `bson:"status" json:"status"` 	 
+	Avatar   string `bson:"avatar" json:"avatar"`
+	Status   string `bson:"status" json:"status"`
 }
 
 func connectToMongoDB() {
-    var err error
-    client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
-    if err != nil {
-        fmt.Println("Помилка створення MongoDB клієнта:", err)
-        return
-    }
+	var err error
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
+	if err != nil {
+		fmt.Println("Помилка створення MongoDB клієнта:", err)
+		return
+	}
 
-    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-    err = client.Connect(ctx)
-    if err != nil {
-        fmt.Println("Помилка підключення до MongoDB:", err)
-        return
-    }
+	err = client.Connect(ctx)
+	if err != nil {
+		fmt.Println("Помилка підключення до MongoDB:", err)
+		return
+	}
 
-    err = client.Ping(ctx, nil)
-    if err != nil {
-        fmt.Println("Помилка пінгування MongoDB:", err)
-        return
-    }
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		fmt.Println("Помилка пінгування MongoDB:", err)
+		return
+	}
 
-    fmt.Println("Підключення до MongoDB успішне")
+	fmt.Println("Підключення до MongoDB успішне")
 
 	userCollection = client.Database("Users").Collection("User")
 	libraryCollection = client.Database("Users").Collection("Library")
@@ -79,65 +79,65 @@ func connectToMongoDB() {
 }
 
 func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodGet {
-        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+		return
+	}
 
-    // Отримання параметру user_id з URL
-    userID := r.URL.Query().Get("user_id")
-    if userID == "" {
-        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
-        return
-    }
+	// Отримання параметру user_id з URL
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+		return
+	}
 
-    // Пошук користувача в базі даних за його user_id
-    var user map[string]interface{}
-    err := userCollection.FindOne(context.Background(), bson.M{"user_id": userID}).Decode(&user)
+	// Пошук користувача в базі даних за його user_id
+	var user map[string]interface{}
+	err := userCollection.FindOne(context.Background(), bson.M{"user_id": userID}).Decode(&user)
 	fmt.Println()
 	if err != nil {
-        http.Error(w, "Користувача не знайдено", http.StatusNotFound)
-        return
-    }
+		http.Error(w, "Користувача не знайдено", http.StatusNotFound)
+		return
+	}
 
-    // Відправка інформації про користувача у відповідь
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(user)
+	// Відправка інформації про користувача у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
 }
 
 func getGamesByUserIDHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodGet {
-        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+		return
+	}
 
-    // Отримання параметру user_id з URL
-    userID := r.URL.Query().Get("user_id")
-    if userID == "" {
-        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
-        return
-    }
+	// Отримання параметру user_id з URL
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+		return
+	}
 
-    // Пошук ігор у бібліотеці користувача за його user_id
-    err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
-    if err != nil {
-        http.Error(w, "Бібліотеку користувача не знайдено", http.StatusNotFound)
-        return
-    }
+	// Пошук ігор у бібліотеці користувача за його user_id
+	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
+	if err != nil {
+		http.Error(w, "Бібліотеку користувача не знайдено", http.StatusNotFound)
+		return
+	}
 
-    // Відправка інформації про ігри користувача у відповідь
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(library)
+	// Відправка інформації про ігри користувача у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(library)
 }
 
 func main() {
-    // Підключення до MongoDB
-    connectToMongoDB()
+	// Підключення до MongoDB
+	connectToMongoDB()
 
-    // Обробник для маршруту
-    http.HandleFunc("/user", getUserInfoHandler)
+	// Обробник для маршруту
+	http.HandleFunc("/user", getUserInfoHandler)
 
-	// 
+	//
 	http.HandleFunc("/user/games", getGamesByUserIDHandler)
 
 	//
@@ -149,7 +149,7 @@ func main() {
 	http.HandleFunc("/searchUser", searchUserHandler)
 
 	//
-	
+	http.HandleFunc("/getFriends", getFriendsHandler)
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -161,8 +161,8 @@ func main() {
 	// Використання cors для обробки запитів
 	handler := c.Handler(http.DefaultServeMux)
 
-    fmt.Println("Сервер запущено на порті 8070...")
-    http.ListenAndServe(":8070", handler)
+	fmt.Println("Сервер запущено на порті 8070...")
+	http.ListenAndServe(":8070", handler)
 }
 
 func addFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
@@ -211,8 +211,8 @@ func confirmFriendRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter := bson.M{
-		"user_id_accept": friend.UserIDAccept,
-		"user_id_sent":   friend.UserIDSent,
+		"user_id_accept":    friend.UserIDAccept,
+		"user_id_sent":      friend.UserIDSent,
 		"friendship_status": "request",
 	}
 
@@ -319,4 +319,80 @@ func searchUsers(query string) ([]User, error) {
 	})
 
 	return users, nil
+}
+
+func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "User ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Отримання списку ID друзів за допомогою функції findFriendsByID
+	friendIDs, err := findFriendsByID(userID)
+	if err != nil {
+		http.Error(w, "Error finding friends", http.StatusInternalServerError)
+		return
+	}
+	
+	// Запит на інформацію про друзів з колекції користувачів
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	var friendsInfo []User
+	for _, friendID := range friendIDs {
+		var user User
+		err := userCollection.FindOne(ctx, bson.M{"user_id": friendID}).Decode(&user)
+		fmt.Println(err)
+		if err != nil {
+			http.Error(w, "Error finding friend info", http.StatusInternalServerError)
+			return
+		}
+		friendsInfo = append(friendsInfo, user)
+	}
+
+	// Повернення інформації про друзів користувача у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(friendsInfo)
+}
+
+
+func findFriendsByID(userID string) ([]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Пошук друзів користувача за його ID у полях user_id_accept та user_id_sent
+	filter := bson.M{
+		"$or": []bson.M{
+			{"user_id_accept": userID},
+			{"user_id_sent": userID},
+		},
+	}
+	cursor, err := friendCollection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var friendIDs []string
+	for cursor.Next(ctx) {
+		var friend Friend
+		if err := cursor.Decode(&friend); err != nil {
+			return nil, err
+		}
+		// Додавання ID друга до масиву
+		if friend.UserIDAccept != userID {
+			friendIDs = append(friendIDs, friend.UserIDAccept)
+		}
+		if friend.UserIDSent != userID {
+			friendIDs = append(friendIDs, friend.UserIDSent)
+		}
+	}
+
+	return friendIDs, nil
 }

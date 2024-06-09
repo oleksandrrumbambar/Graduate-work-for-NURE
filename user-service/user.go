@@ -26,7 +26,7 @@ var libraryCollection *mongo.Collection
 var basketCollection *mongo.Collection
 var wishlistCollection *mongo.Collection
 
-var library struct {
+type Library struct {
 	UserID string   `bson:"user" json:"user"`
 	Games  []string `bson:"games" json:"games"`
 }
@@ -139,6 +139,7 @@ func getGamesByUserIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Пошук ігор у бібліотеці користувача за його user_id
+	var library Library
 	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
 	if err != nil {
 		http.Error(w, "Бібліотеку користувача не знайдено", http.StatusNotFound)
@@ -186,6 +187,9 @@ func main() {
 	http.HandleFunc("/basket", AddToBasketHandler)
 	// POST запит для видалення елементу до бажаного
 	http.HandleFunc("/basket/remove", RemoveFromBasketHandler)
+
+	// GET запит для покажу ігор у друзів
+	http.HandleFunc("/user/gamesWithFriends", getFriendsWithGameHandler)
 
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
@@ -675,4 +679,98 @@ func RemoveFromWishlistHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Відправка відповіді про успішне видалення зі списку бажаного
 	w.WriteHeader(http.StatusOK)
+}
+
+func getFriendsWithGameHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Отримання параметрів user_id та game з URL
+	userID := r.URL.Query().Get("user_id")
+	game := r.URL.Query().Get("game")
+	if userID == "" || game == "" {
+		http.Error(w, "Не вказано user_id або game", http.StatusBadRequest)
+		return
+	}
+
+	// Пошук друзів користувача
+	cursor, err := friendCollection.Find(context.Background(), bson.M{
+		"$or": []bson.M{
+			{"user_id_accept": userID, "friendship_status": "friendship"},
+			{"user_id_sent": userID, "friendship_status": "friendship"},
+		},
+	})
+	if err != nil {
+		http.Error(w, "Помилка пошуку друзів", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	var friends []Friend
+	if err = cursor.All(context.Background(), &friends); err != nil {
+		http.Error(w, "Помилка обробки друзів", http.StatusInternalServerError)
+		return
+	}
+
+	var friendIDs []string
+	for _, friend := range friends {
+		if friend.UserIDAccept == userID {
+			friendIDs = append(friendIDs, friend.UserIDSent)
+		} else {
+			friendIDs = append(friendIDs, friend.UserIDAccept)
+		}
+	}
+
+	// Пошук друзів, які мають гру у бібліотеці
+	var friendsWithGame []string
+	cursor, err = libraryCollection.Find(context.Background(), bson.M{
+		"user": bson.M{"$in": friendIDs},
+		"games": game,
+	})
+	if err != nil {
+		http.Error(w, "Помилка пошуку бібліотеки", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	var libraries []Library
+	if err = cursor.All(context.Background(), &libraries); err != nil {
+		http.Error(w, "Помилка обробки бібліотеки", http.StatusInternalServerError)
+		return
+	}
+	for _, lib := range libraries {
+		friendsWithGame = append(friendsWithGame, lib.UserID)
+	}
+
+	// Пошук друзів, які мають гру у списку бажаного
+	var friendsWithGameInWishlist []string
+	cursor, err = wishlistCollection.Find(context.Background(), bson.M{
+		"user": bson.M{"$in": friendIDs},
+		"games": game,
+	})
+	if err != nil {
+		http.Error(w, "Помилка пошуку списку бажаного", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	var wishlists []Wishlist
+	if err = cursor.All(context.Background(), &wishlists); err != nil {
+		http.Error(w, "Помилка обробки списку бажаного", http.StatusInternalServerError)
+		return
+	}
+	for _, wl := range wishlists {
+		friendsWithGameInWishlist = append(friendsWithGameInWishlist, wl.User)
+	}
+
+	// Відправка інформації про друзів, які мають гру
+	response := map[string][]string{
+		"friendsWithGame":             friendsWithGame,
+		"friendsWithGameInWishlist": friendsWithGameInWishlist,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

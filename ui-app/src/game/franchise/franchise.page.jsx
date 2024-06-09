@@ -9,18 +9,22 @@ const darkTheme = createTheme({
     },
 });
 
-function PublisherPage() {
+function FranchisePage() {
     const [games, setGames] = useState([]);
     const { id } = useParams();
 
     useEffect(() => {
         console.log(id);
 
-        // Fetch publisher data
-        fetch(`http://localhost:8050/gamesbydeveloperorpublisher?name=${id}`)
+        // Fetch all games
+        fetch('http://localhost:8050/games')
             .then(response => response.json())
-            .then(data => setGames(data))
-            .catch(error => console.error('Error fetching publisher data:', error));
+            .then(data => {
+                // Filter games that belong to the same franchise
+                const franchiseGames = data.filter(game => game.franchise === id);
+                setGames(franchiseGames);
+            })
+            .catch(error => console.error('Error fetching games:', error));
     }, [id]);
 
     // Calculate the number of games and the total number of buyers
@@ -40,7 +44,7 @@ function PublisherPage() {
                     {id}
                 </Typography>
 
-                {/* Publisher information */}
+                {/* Franchise information */}
                 <Grid container spacing={3} justifyContent="center">
                     <Grid item>
                         <Typography variant="subtitle1">
@@ -54,9 +58,9 @@ function PublisherPage() {
                     </Grid>
                 </Grid>
 
-                {/* Publisher games list */}
+                {/* Franchise games list */}
                 <Typography variant="h5" gutterBottom style={{ marginTop: 20 }} align="center">
-                    Ігри видавця {id}:
+                    Ігри франшизи {id}:
                 </Typography>
                 <Grid container spacing={3} justifyContent="center" style={{ paddingBottom: '80px' }}>
                     {games.map(game => (
@@ -108,4 +112,4 @@ function PublisherPage() {
     );
 }
 
-export default PublisherPage;
+export default FranchisePage;

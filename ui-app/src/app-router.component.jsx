@@ -19,6 +19,7 @@ import NotFoundPage from './store/404/404';
 import BackgroundVideo from './BackgroundVideo';
 import PaymentConfirmationPage from './payment/payment.confirmation.page';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import FranchisePage from './game/franchise/franchise.page';
 
 const darkTheme = createTheme({
   palette: {
@@ -51,6 +52,7 @@ function AppRouter() {
           <Route path='/basket' element={<CartPage />} />
           <Route path='/wishlist' element={<WishListPage />} />
           <Route path='/confirmpay' element={<PaymentConfirmationPage />} />
+          <Route path='/franchise/:id' element={<FranchisePage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
         </ThemeProvider>

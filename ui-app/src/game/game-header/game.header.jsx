@@ -128,7 +128,7 @@ const GameHeader = ({ gameData }) => {
             </Typography>
             <Typography variant="body1">Дата виходу: {gameData.release_date}</Typography>
             <Typography variant="body1" style={{ color: 'white' }}>
-              Франшиза: <Link to={`/publisher/${gameData.franchise}`} className="custom-link">{gameData.franchise}</Link>
+              Франшиза: <Link to={`/franchise/${gameData.franchise}`} className="custom-link">{gameData.franchise}</Link>
             </Typography>
           </Box>
         </Box>

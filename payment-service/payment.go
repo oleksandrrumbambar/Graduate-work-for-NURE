@@ -128,7 +128,7 @@ func main() {
 	// Використання cors для обробки запитів
 	handler := c.Handler(http.DefaultServeMux)
 
-	fmt.Println("Сервер запущено на порті 8040...")
+	fmt.Println("Сервер PAYMENT запущено на порті 8040...")
 	http.ListenAndServe(":8040", handler)
 }
 

@@ -200,7 +200,7 @@ func main() {
 
 	handler := c.Handler(http.DefaultServeMux)
 
-	fmt.Println("Сервер запущено на порті 8030...")
+	fmt.Println("Сервер STATISTIC запущено на порті 8030...")
 	http.ListenAndServe(":8030", handler)
 }
 

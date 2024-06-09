@@ -17,6 +17,7 @@ import CartPage from './store/basket/basket';
 import WishListPage from './store/wishlist/wishlist.page';
 import NotFoundPage from './store/404/404';
 import BackgroundVideo from './BackgroundVideo';
+import PaymentConfirmationPage from './payment/payment.confirmation.page';
 
 function AppRouter() {
   return (
@@ -37,6 +38,7 @@ function AppRouter() {
           <Route path='/library' element={<LibraryPage />} />
           <Route path='/basket' element={<CartPage />} />
           <Route path='/wishlist' element={<WishListPage />} />
+          <Route path='/confirmpay' element={<PaymentConfirmationPage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
       </BackgroundVideo>

@@ -117,7 +117,10 @@ function CartPage() {
                             to={{ pathname: "/payment" }}
                             variant="contained"
                             color="primary"
-                            onClick={() => localStorage.setItem('basket', JSON.stringify(basket))}
+                            onClick={() => {
+                                localStorage.setItem('basket', JSON.stringify(basket));
+                                localStorage.setItem('price', parseInt(products.reduce((acc, curr) => acc + parseInt(curr.price), 0), 10));
+                            }}
                             style={{ marginTop: '20px' }}
                         >
                             Оплатити

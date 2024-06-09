@@ -2,6 +2,7 @@ import React from 'react';
 import { Container, Typography, TextField, Button, Grid, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
 const darkTheme = createTheme({
     palette: {
@@ -16,6 +17,7 @@ function PaymentPage() {
     // Обробка отриманих даних
     console.log('User ID:', localStorage.getItem('id_user'));
     console.log('Basket:', localStorage.getItem('basket'));
+    console.log('Price:', localStorage.getItem('price'));
 
     return (
         <ThemeProvider theme={darkTheme}>
@@ -85,7 +87,7 @@ function PaymentPage() {
                 <Typography variant="body2" align="center" style={{ marginTop: '20px' }}>
                     Ви матимете можливість переглянути своє замовлення перед оплатою.
                 </Typography>
-                <Button variant="contained" fullWidth color="primary" style={{ marginTop: '20px', marginBottom: '120px' }}>
+                <Button component={RouterLink} to="/confirmpay" variant="contained" fullWidth color="primary" style={{ marginTop: '20px', marginBottom: '120px' }}>
                     Продовжити
                 </Button>
             </Container>

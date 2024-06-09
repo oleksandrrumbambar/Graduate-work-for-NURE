@@ -20,8 +20,12 @@ import (
 
 var client *mongo.Client
 var userCollection *mongo.Collection
-var libraryCollection *mongo.Collection
 var friendCollection *mongo.Collection
+
+var libraryCollection *mongo.Collection
+var basketCollection *mongo.Collection
+var wishlistCollection *mongo.Collection
+
 
 var library struct {
 	UserID string   `bson:"user" json:"user"`
@@ -47,6 +51,20 @@ type User struct {
 	UserID   string `bson:"user_id" json:"user_id"`
 	Avatar   string `bson:"avatar" json:"avatar"`
 	Status   string `bson:"status" json:"status"`
+}
+
+// Basket модель кошика користувача
+type Basket struct {
+	ID    primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	User  string             `bson:"user" json:"user"`
+	Games []string           `bson:"games" json:"games"`
+}
+
+// Wishlist модель списку бажаного користувача
+type Wishlist struct {
+	ID    primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	User  string             `bson:"user" json:"user"`
+	Games []string           `bson:"games" json:"games"`
 }
 
 func connectToMongoDB() {
@@ -76,6 +94,8 @@ func connectToMongoDB() {
 
 	userCollection = client.Database("Users").Collection("User")
 	libraryCollection = client.Database("Users").Collection("Library")
+	basketCollection = client.Database("Users").Collection("Basket")
+	wishlistCollection = client.Database("Users").Collection("WishList")
 	friendCollection = client.Database("Users").Collection("Friend")
 }
 
@@ -140,6 +160,8 @@ func main() {
 
 	//
 	http.HandleFunc("/user/games", getGamesByUserIDHandler)
+	http.HandleFunc("/user/gamesBasket", getGamesFromBasketByUserIDHandler)
+	http.HandleFunc("/user/gamesWishlist", getGamesFromWishlistByUserIDHandler)
 
 	//
 	http.HandleFunc("/addFriendRequest", addFriendRequestHandler)
@@ -366,7 +388,6 @@ func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(friendsInfo)
 }
 
-
 func findFriendsByID(userID string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -483,4 +504,59 @@ func getFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
 	// Повернення інформації про користувачів у відповідь
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
+}
+
+// getGamesFromBasketByUserIDHandler отримує кошик користувача за його user_id
+func getGamesFromBasketByUserIDHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Отримання параметру user_id з URL
+    userID := r.URL.Query().Get("user_id")
+    if userID == "" {
+        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+        return
+    }
+	//fmt.Println(userID)
+	//fmt.Println(userID)
+    // Пошук ігор у кошику користувача за його user_id
+    var basket Basket
+    err := basketCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&basket)
+    if err != nil {
+        http.Error(w, "Кошик користувача не знайдено", http.StatusNotFound)
+        return
+    }
+
+    // Відправка інформації про ігри з кошика користувача у відповідь
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(basket)
+}
+
+// getWishlistByUserIDHandler отримує список бажаного користувача за його user_id
+func getGamesFromWishlistByUserIDHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Отримання параметру user_id з URL
+    userID := r.URL.Query().Get("user_id")
+    if userID == "" {
+        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+        return
+    }
+
+    // Пошук ігор у кошику користувача за його user_id
+    var wishlist Wishlist
+    err := wishlistCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&wishlist)
+    if err != nil {
+        http.Error(w, "Кошик користувача не знайдено", http.StatusNotFound)
+        return
+    }
+
+    // Відправка інформації про ігри з кошика користувача у відповідь
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(wishlist)
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../user/authorisation/auth.context';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -12,7 +13,10 @@ import {
   ThemeProvider,
   createTheme,
   CssBaseline,
+  Snackbar
 } from '@mui/material';
+
+import { Alert } from '@mui/lab'; // Замінено Snackbar на Alert
 import '../game.page.css';
 
 const theme = createTheme({
@@ -27,9 +31,20 @@ const theme = createTheme({
 const GameHeader = ({ gameData }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const [snackbarOpen, setSnackbarOpen] = useState(false); 
+  const { userRole } = useAuth();
 
   const handleAddToCart = () => {
-    setOpen(true);
+    if (userRole === 'unauthorized') {
+      navigate('/login');
+      setSnackbarOpen(true); // Встановлення значення для відображення спливаючого повідомлення
+    } else {
+      setOpen(true);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   const handleClose = () => {
@@ -97,6 +112,13 @@ const GameHeader = ({ gameData }) => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Відображення Alert */}
+        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity="warning">
+            Тільки авторизовані користувачі можуть додавати товари до кошика.
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );

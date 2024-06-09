@@ -95,6 +95,7 @@ type Game struct {
 	HeaderImage        string             `bson:"header_image" json:"header_image"`
 	FriendActivity     FriendActivity     `bson:"friend_activity" json:"friend_activity"`
 	CopiesSold         int64              `bson:"copies_sold" json:"copies_sold"`
+	Franchise		   string			  `bson:"franchise" json:"franchise"`
 }
 
 type Rating struct {
@@ -210,6 +211,7 @@ type UserStatistics struct {
 	GameAgePercentages    map[string]float64 `json:"game_age_percentages"`
 	GamesPurchasedPerYear map[int]int        `json:"games_purchased_per_year"`
 	TotalAccountPrice     float64            `json:"total_account_price"`
+	FavoriteFranchises    []string           `json:"favorite_franchises"`
 }
 
 // userStatisticsHandler це HTTP-обробник для кінцевого пункту статистики користувачів.
@@ -253,14 +255,22 @@ func userStatisticsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	favoriteFranchises, err := getFavoriteFranchises(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Створіть відповідь зі статистикою користувачів.
 	stats := UserStatistics{
-		FavoriteGenre:      favoriteGenre,
-		GenreWeights:       genreWeights,
-		GameAgePercentages: gameAgePercentages,
-		GamesPurchasedPerYear:	gamesPurchasedPerYear,
-		TotalAccountPrice: totalAccountPrice,
+		FavoriteGenre:         favoriteGenre,
+		GenreWeights:          genreWeights,
+		GameAgePercentages:    gameAgePercentages,
+		GamesPurchasedPerYear: gamesPurchasedPerYear,
+		TotalAccountPrice:     totalAccountPrice,
+		FavoriteFranchises:    favoriteFranchises,
 	}
+
 
 	// Перетворіть статистику в JSON і надішліть відповідь.
 	w.Header().Set("Content-Type", "application/json")
@@ -529,4 +539,68 @@ func getTotalAccountPrice(userID string) (float64, error) {
 	}
 
 	return totalPrice, nil
+}
+
+// getFavoriteFranchises визначає улюблені франшизи користувача на основі кількості придбаних ігор.
+func getFavoriteFranchises(userID string) ([]string, error) {
+	library := Library{}
+	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
+	if err != nil {
+		return nil, err
+	}
+
+	// Підрахунок ігор у кожній франшизі в бібліотеці користувача.
+	franchiseCounts := make(map[string]int)
+	for _, gameID := range library.Games {
+		game := Game{}
+		objID, err := primitive.ObjectIDFromHex(gameID)
+		if err != nil {
+			continue // Пропустити ігри, які неможливо знайти
+		}
+		err = gameCollection.FindOne(context.Background(), bson.M{"_id": objID}).Decode(&game)
+		if err != nil {
+			continue // Пропустити ігри, які неможливо знайти
+		}
+		if game.Franchise != "" {
+			franchiseCounts[game.Franchise]++
+		}
+	}
+
+	// Знаходження загальної кількості ігор у кожній франшизі.
+	franchiseTotalCounts := make(map[string]int)
+	cursor, err := gameCollection.Aggregate(context.Background(), mongo.Pipeline{
+		{{"$group", bson.D{
+			{"_id", "$franchise"},
+			{"count", bson.D{{"$sum", 1}}},
+		}}},
+		{{"$match", bson.D{
+			{"count", bson.D{{"$gte", 3}}},
+		}}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var result struct {
+			Franchise string `bson:"_id"`
+			Count     int    `bson:"count"`
+		}
+		if err := cursor.Decode(&result); err != nil {
+			return nil, err
+		}
+		franchiseTotalCounts[result.Franchise] = result.Count
+	}
+
+	// Визначення улюблених франшиз.
+	var favoriteFranchises []string
+	for franchise, count := range franchiseCounts {
+		total, ok := franchiseTotalCounts[franchise]
+		if ok && float64(count)/float64(total) >= 0.7 {
+			favoriteFranchises = append(favoriteFranchises, franchise)
+		}
+	}
+
+	return favoriteFranchises, nil
 }

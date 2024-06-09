@@ -127,6 +127,9 @@ const GameHeader = ({ gameData }) => {
               Видавець: <Link to={`/publisher/${gameData.publisher}`} className="custom-link">{gameData.publisher}</Link>
             </Typography>
             <Typography variant="body1">Дата виходу: {gameData.release_date}</Typography>
+            <Typography variant="body1" style={{ color: 'white' }}>
+              Франшиза: <Link to={`/publisher/${gameData.franchise}`} className="custom-link">{gameData.franchise}</Link>
+            </Typography>
           </Box>
         </Box>
 

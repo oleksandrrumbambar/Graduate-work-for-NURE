@@ -36,6 +36,7 @@ type Game struct {
 	HeaderImage        string             `bson:"header_image" json:"header_image"`
 	FriendActivity     FriendActivity     `bson:"friend_activity" json:"friend_activity"`
 	CopiesSold		   int64			  `bson:"copies_sold" json:"copies_sold"`
+	Franchise		   string			  `bson:"franchise" json:"franchise"`
 }
 
 type Rating struct {

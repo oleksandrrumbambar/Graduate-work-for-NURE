@@ -16,28 +16,31 @@ import Friend from './user/friend/friends.page';
 import CartPage from './store/basket/basket';
 import WishListPage from './store/wishlist/wishlist.page';
 import NotFoundPage from './store/404/404';
+import BackgroundVideo from './BackgroundVideo';
 
 function AppRouter() {
   return (
-        <div>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Authorisation />} />
-            <Route path="/registration" element={<Registration />} />
-            <Route path="/game/:id" element={<Game />} />
-            <Route path="/profile/:id" element={<Profile />} />
-            <Route path="/friend" element={<Friend />} />
-            <Route path='/search' element={<Search />} />
-            <Route path='/payment' element={<PaymentPage />} />
-            <Route path='/statisticstore' element={<GameStatisticsPage />}/>
-            <Route path='/publisher/:id' element={<PublisherPage />} />
-            <Route path='/library' element={<LibraryPage   />} />
-            <Route path='/basket' element={<CartPage   />} />
-            <Route path='/wishlist' element={<WishListPage   />} />
-            <Route path='*' element={<NotFoundPage  />} />
-          </Routes>
-        </div>
+    <div>
+      <BackgroundVideo>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Authorisation />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/game/:id" element={<Game />} />
+          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/friend" element={<Friend />} />
+          <Route path='/search' element={<Search />} />
+          <Route path='/payment' element={<PaymentPage />} />
+          <Route path='/statisticstore' element={<GameStatisticsPage />} />
+          <Route path='/publisher/:id' element={<PublisherPage />} />
+          <Route path='/library' element={<LibraryPage />} />
+          <Route path='/basket' element={<CartPage />} />
+          <Route path='/wishlist' element={<WishListPage />} />
+          <Route path='*' element={<NotFoundPage />} />
+        </Routes>
+      </BackgroundVideo>
+    </div>
   );
 }
 

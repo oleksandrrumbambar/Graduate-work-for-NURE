@@ -182,6 +182,11 @@ func main() {
 	// POST запит для видалення елементу до бажаного
 	http.HandleFunc("/wishlist/remove", RemoveFromWishlistHandler)
 
+	// POST запит для додавання елементу до бажаного
+	http.HandleFunc("/basket", AddToBasketHandler)
+	// POST запит для видалення елементу до бажаного
+	http.HandleFunc("/basket/remove", RemoveFromBasketHandler)
+
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -535,6 +540,60 @@ func getGamesFromBasketByUserIDHandler(w http.ResponseWriter, r *http.Request) {
 	// Відправка інформації про ігри з кошика користувача у відповідь
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(basket)
+}
+
+// AddToBasketHandler - обробник HTTP POST запиту для додавання елементу до кошика користувача.
+func AddToBasketHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("user_id") // Отримання ID користувача з параметру запиту
+
+	// Декодування тіла запиту для отримання ID гри
+	var gameID struct {
+		GameID string `json:"game_id"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&gameID)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Оновлення запису користувача за його ID для додавання нового ID гри
+	filter := bson.M{"user": userID}
+	update := bson.M{"$addToSet": bson.M{"games": gameID.GameID}}
+	_, err = basketCollection.UpdateOne(context.Background(), filter, update, options.Update().SetUpsert(true))
+	if err != nil {
+		http.Error(w, "Error updating wishlist", http.StatusInternalServerError)
+		return
+	}
+
+	// Відправка відповіді про успішне додавання до бажаного
+	w.WriteHeader(http.StatusCreated)
+}
+
+// RemoveFromBasketHandler - обробник HTTP POST запиту для видалення елементу з кошика користувача.
+func RemoveFromBasketHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("user_id") // Отримання ID користувача з параметру запиту
+
+	// Декодування тіла запиту для отримання ID гри
+	var gameID struct {
+		GameID string `json:"game_id"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&gameID)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Оновлення запису користувача за його ID для видалення ID гри зі списку бажаного
+	filter := bson.M{"user": userID}
+	update := bson.M{"$pull": bson.M{"games": gameID.GameID}}
+	_, err = basketCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		http.Error(w, "Error updating wishlist", http.StatusInternalServerError)
+		return
+	}
+
+	// Відправка відповіді про успішне видалення зі списку бажаного
+	w.WriteHeader(http.StatusOK)
 }
 
 // getWishlistByUserIDHandler отримує список бажаного користувача за його user_id

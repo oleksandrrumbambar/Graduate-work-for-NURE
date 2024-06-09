@@ -8,13 +8,16 @@ import Footer from './component/footer/footer';
 import { AuthProvider } from './user/authorisation/auth.context';
 
 function App() {
-
   return (
     <div className="App">
       <AuthProvider>
-        <Header/>
-        <AppRouter />
-        <Footer />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <Header />
+                <main style={{ flex: 1 }}>
+                    <AppRouter />
+                </main>
+                <Footer />
+            </div>
       </AuthProvider>
     </div>
   );

@@ -5,9 +5,18 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import { ThemeProvider, createTheme } from '@material-ui/core/styles';
+
+const darkTheme = createTheme({
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#1976d2',
+        },
+    },
+});
 
 const useStyles = makeStyles({
     tableContainer: {
@@ -21,7 +30,10 @@ const useStyles = makeStyles({
         width: '20%',
     },
     nameCell: {
-        width: '70%',
+        width: '60%',
+    },
+    genreCell: {
+        width: '10%',
     },
     priceCell: {
         width: '10%',
@@ -41,33 +53,31 @@ function TableAllGames() {
     }, []);
 
     return (
-        <div>
+        <ThemeProvider theme={darkTheme}>
             <TableContainer component={Paper} className={classes.tableContainer}>
                 <Table className={classes.table} aria-label="games table">
                     <TableBody>
                         {games.map((game) => (
-                            <Link to={`/game/${game.id}`}>
-                                <TableRow key={game.id}>
-                                    <TableCell className={classes.imageCell}>
-                                        <img src={game.header_image} alt={game.name} style={{ maxWidth: '100%' }} />
-                                    </TableCell>
-                                    <TableCell className={classes.nameCell}>
-                                        <Link to={`/game/${game.id}`}>{game.name}</Link>
-                                    </TableCell>
-                                    <TableCell>
-                                        {game.genre.join(', ')}
-                                    </TableCell>
-                                    <TableCell className={classes.priceCell}>
-                                        {game.price}
-                                    </TableCell>
-                                </TableRow>
-                            </Link>
+                            <TableRow key={game.id}>
+                                <TableCell className={classes.imageCell}>
+                                    <img src={game.header_image} alt={game.name} style={{ maxWidth: '100%' }} />
+                                </TableCell>
+                                <TableCell className={classes.nameCell}>
+                                    <Link to={`/game/${game.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{game.name}</Link>
+                                </TableCell>
+                                <TableCell className={classes.genreCell}>
+                                    {game.genre.join(', ')}
+                                </TableCell>
+                                <TableCell className={classes.priceCell}>
+                                    {game.price}
+                                </TableCell>
+                            </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
-        </div>
+        </ThemeProvider>
     );
-};
+}
 
 export default TableAllGames;

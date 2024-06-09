@@ -28,6 +28,10 @@ function GameList({ userLibrary }) {
         fetchGames();
     }, [userLibrary]);
 
+    if (!userLibrary) {
+        return null; // або можна відображати попередження чи показувати інший вміст
+    }
+
     return (
         <div className='game-list'>
             <Grid container spacing={3}>

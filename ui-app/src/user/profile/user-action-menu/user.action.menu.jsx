@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Menu, MenuItem } from '@mui/material';
+import { MoreHoriz } from '@mui/icons-material'; // Import the MoreHoriz icon
 import { useParams } from 'react-router-dom';
 
 function UserActionsMenu() {
@@ -91,9 +92,22 @@ function UserActionsMenu() {
 
     return (
         <React.Fragment>
-            <button onClick={handleClick} style={{ width: '100%', padding: '8px', fontSize: '14px', textAlign: 'left', border: '1px solid #808080', borderRadius: '4px', cursor: 'pointer' }}>
-                ...
-            </button>
+            <Button 
+                onClick={handleClick}
+                variant="outlined" 
+                style={{ 
+                    width: '100%', 
+                    padding: '8px', 
+                    color: 'white',
+                    fontSize: '14px', 
+                    textAlign: 'left', 
+                    border: '1px solid #808080', 
+                    borderRadius: '4px', 
+                    cursor: 'pointer' 
+                }}
+                startIcon={<MoreHoriz />} // Add the MoreHoriz icon as the startIcon
+            >
+            </Button>
             <Menu
                 id="user-actions-menu"
                 anchorEl={anchorEl}

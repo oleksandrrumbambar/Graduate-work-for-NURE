@@ -4,9 +4,29 @@ import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
+import CardContent from '@mui/material/CardContent';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
-import { styled } from '@mui/joy';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const darkTheme = createTheme({
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#1976d2',
+        },
+        background: {
+            default: '#121212',
+            paper: '#1e1e1e',
+        },
+        text: {
+            primary: '#ffffff',
+            secondary: '#aaaaaa',
+        },
+    },
+});
 
 const useStyles = makeStyles({
     galleryContainer: {
@@ -44,54 +64,86 @@ const useStyles = makeStyles({
 function TopSlider() {
     const classes = useStyles();
     const [topGames, setTopGames] = useState([]);
+    const [activeMainImage, setActiveMainImage] = useState({});
 
     useEffect(() => {
-        // Викликати запит до сервера для отримання списку ігор
+        // Fetch the top games data
         fetch('http://localhost:8050/topgames')
             .then(response => response.json())
-            .then(data => setTopGames(data))
-            .catch(error => console.error('Помилка отримання ігор:', error));
+            .then(data => {
+                setTopGames(data);
+                const initialImages = {};
+                data.forEach(game => {
+                    initialImages[game.id] = game.gallery[2].url;
+                });
+                setActiveMainImage(initialImages);
+            })
+            .catch(error => console.error('Error fetching top games:', error));
     }, []);
 
+    const handleMouseEnter = (gameId, imageUrl) => {
+        setActiveMainImage(prevState => ({
+            ...prevState,
+            [gameId]: imageUrl,
+        }));
+    };
+
     return (
-        <div className={classes.galleryContainer}>
-            <Carousel className={classes.carouselContainer} showArrows autoPlay infiniteLoop>
-                {topGames.map((game, index) => (
-                    <div key={game.id}>
-                        <Grid container style={{ paddingLeft: '90px' }}>
-                            <Grid item xs={12} md={4}>
-                                <Link to={`/game/${game.id}`}>
-                                    <Paper className={classes.gridItem}>
-                                        <img src={game.header_image} alt={game.name} className={classes.mainImage} />
-                                        <Typography variant="h6">{game.name}</Typography>
-                                        <Typography variant="body1">{game.genre.join(', ')}</Typography>
-                                        <Typography variant="h6">{game.price}</Typography>
-                                    </Paper>
-                                </Link>
-                            </Grid>
-                            <Grid container item xs={12} md={8} style={{ paddingLeft: '20px' }}>
-                                <Grid item xs={12} md={9}>
-                                    {game.gallery.slice(2, 3).map((item, idx) => (
-                                        <img src={item.url} alt={`Gallery item ${idx}`} style={{ display: 'block', margin: 'auto', height: '380px', width: '100%', objectFit: 'cover' }} />
-                                    ))}
+        <ThemeProvider theme={darkTheme}>
+            <div className={classes.galleryContainer}>
+                <Carousel className={classes.carouselContainer} showArrows autoPlay infiniteLoop>
+                    {topGames.map((game) => (
+                        <div key={game.id}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} md={8}>
+                                    <Link to={`/game/${game.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                        <Card style={{ paddingLeft: "40px"}}>
+                                            <CardMedia
+                                                component="img"
+                                                alt={game.name}
+                                                height="405px"
+                                                image={activeMainImage[game.id]}
+                                                title={game.name}
+                                            />
+                                        </Card>
+                                    </Link>
                                 </Grid>
-                                <Grid item xs={12} md={3} className={classes.rightColumn}>
-                                    <Grid className={classes.sideImages}>
-                                        {game.gallery.slice(3, 6).map((item, idx) => (
-                                            <Grid item xs={8} key={idx}>
-                                                <Paper className={classes.gridItem}>
-                                                    <img src={item.url} alt={`Gallery item ${idx}`} className={classes.sideImage} />
-                                                </Paper>
+                                <Grid item xs={12} md={4}>
+                                    <Card style={{ paddingRight: "30px"}}>
+                                        <CardContent>
+                                            <Typography variant="h5" color="textPrimary" style={{ color: 'white' }}>
+                                                {game.name}
+                                            </Typography>
+                                            <Typography variant="body2" color="textSecondary" style={{ color: 'white' }}>
+                                                {game.genre.join(', ')}
+                                            </Typography>
+                                            <Typography variant="h6" color="textPrimary" gutterBottom style={{ color: 'white' }}>
+                                                {game.price}
+                                            </Typography>
+                                            <Grid container spacing={1}>
+                                                {game.gallery.slice(2, 6).map((item, idx) => (
+                                                    <Grid item xs={6} key={idx}>
+                                                        <img
+                                                            src={item.url}
+                                                            alt={`Gallery item ${idx}`}
+                                                            className={classes.sideImage}
+                                                            onMouseEnter={() => handleMouseEnter(game.id, item.url)}
+                                                        />
+                                                    </Grid>
+                                                ))}
                                             </Grid>
-                                        ))}
-                                    </Grid>
+                                            <Typography variant="body2" color="textSecondary" style={{ marginTop: '10px', color: 'white' }}>
+                                                Новинка
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
                                 </Grid>
                             </Grid>
-                        </Grid>
-                    </div>
-                ))}
-            </Carousel>
-        </div>
+                        </div>
+                    ))}
+                </Carousel>
+            </div>
+        </ThemeProvider>
     );
 }
 

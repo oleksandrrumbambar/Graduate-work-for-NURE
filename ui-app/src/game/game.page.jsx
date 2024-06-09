@@ -114,6 +114,7 @@ function Game() {
   }
 
   return (
+    
     <div className="game-page">
       <h1>{gameData.title}</h1>
       <div className="game-main-information">

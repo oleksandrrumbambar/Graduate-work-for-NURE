@@ -13,6 +13,8 @@ import GameStatisticsPage from './store/statistic/statistic.store.page';
 import PublisherPage from './publisher/publisher.page';
 import LibraryPage from './user/library/library.page';
 import Friend from './user/friend/friends.page';
+import CartPage from './store/basket/basket';
+import WishListPage from './store/wishlist/wishlist.page';
 
 function AppRouter() {
   return (
@@ -30,6 +32,8 @@ function AppRouter() {
             <Route path='/statisticstore' element={<GameStatisticsPage />}/>
             <Route path='/publisher/:id' element={<PublisherPage />} />
             <Route path='/library' element={<LibraryPage   />} />
+            <Route path='/basket' element={<CartPage   />} />
+            <Route path='/wishlist' element={<WishListPage   />} />
           </Routes>
         </div>
   );

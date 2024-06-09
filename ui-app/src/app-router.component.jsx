@@ -15,6 +15,7 @@ import LibraryPage from './user/library/library.page';
 import Friend from './user/friend/friends.page';
 import CartPage from './store/basket/basket';
 import WishListPage from './store/wishlist/wishlist.page';
+import NotFoundPage from './store/404/404';
 
 function AppRouter() {
   return (
@@ -34,6 +35,7 @@ function AppRouter() {
             <Route path='/library' element={<LibraryPage   />} />
             <Route path='/basket' element={<CartPage   />} />
             <Route path='/wishlist' element={<WishListPage   />} />
+            <Route path='*' element={<NotFoundPage  />} />
           </Routes>
         </div>
   );

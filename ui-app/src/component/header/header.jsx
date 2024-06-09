@@ -22,7 +22,7 @@ function Header() {
       <AppBar position="sticky">
         <Toolbar>
           <Typography variant="h6" component="div">
-            <Link component={RouterLink} to="/" color="inherit" underline="none">
+            <Link component={RouterLink} to="/" color="#188a8d" underline="none">
               Home
             </Link>
           </Typography>

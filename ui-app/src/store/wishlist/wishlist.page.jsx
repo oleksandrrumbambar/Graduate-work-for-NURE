@@ -66,9 +66,8 @@ function WishListPage() {
             },
             body: JSON.stringify({ game_id: gameId }),
         })
-        .then(response => response.json())
         .then(() => {
-            // Оновлення списку бажаного після видалення гри
+            debugger    
             const updatedWishlist = wishlist.filter(id => id !== gameId);
             setWishlist(updatedWishlist);
         })
@@ -162,6 +161,7 @@ function WishListPage() {
                     </Grid>
                 </Grid>
             </Container>
+            <hr style={{marginTop: '400px'}}></hr>
         </ThemeProvider>
     );
 }

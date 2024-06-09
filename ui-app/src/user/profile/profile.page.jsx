@@ -19,7 +19,7 @@ function Profile() {
     palette: {
       mode: 'dark',
       primary: {
-        main: '#ffffff',
+        main: '#188a8d',
       },
     },
   });
@@ -51,7 +51,7 @@ function Profile() {
     <div className="user-profile">
       {userData && (
         <ThemeProvider theme={darkTheme}>
-          <Grid container justifyContent="center" alignItems="center" spacing={2}>
+          <Grid container justifyContent="center" alignItems="center" spacing={2} style={{ marginBottom: '250px' }}>
             <Grid item xs={12} md={6}>
               <Paper elevation={3} style={{ padding: 20 }}>
                 {userData && (

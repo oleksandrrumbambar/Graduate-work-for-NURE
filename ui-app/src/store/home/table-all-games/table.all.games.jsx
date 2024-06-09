@@ -54,7 +54,7 @@ function TableAllGames() {
 
     return (
         <ThemeProvider theme={darkTheme}>
-            <TableContainer component={Paper} className={classes.tableContainer}>
+            <TableContainer className={classes.tableContainer}>
                 <Table className={classes.table} aria-label="games table">
                     <TableBody>
                         {games.map((game) => (

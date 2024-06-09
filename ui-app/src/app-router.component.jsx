@@ -18,11 +18,23 @@ import WishListPage from './store/wishlist/wishlist.page';
 import NotFoundPage from './store/404/404';
 import BackgroundVideo from './BackgroundVideo';
 import PaymentConfirmationPage from './payment/payment.confirmation.page';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#188a8d',
+    },
+  },
+});
+
 
 function AppRouter() {
   return (
     <div>
       <BackgroundVideo>
+      <ThemeProvider theme={darkTheme}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -41,6 +53,7 @@ function AppRouter() {
           <Route path='/confirmpay' element={<PaymentConfirmationPage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
+        </ThemeProvider>
       </BackgroundVideo>
     </div>
   );

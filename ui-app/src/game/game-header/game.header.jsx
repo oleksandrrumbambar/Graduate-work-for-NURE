@@ -31,13 +31,14 @@ const theme = createTheme({
 const GameHeader = ({ gameData }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const [snackbarOpen, setSnackbarOpen] = useState(false); 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const { userRole } = useAuth();
 
   const handleAddToCart = () => {
     if (userRole === 'unauthorized') {
       navigate('/login');
       setSnackbarOpen(true); // Встановлення значення для відображення спливаючого повідомлення
+
     } else {
       setOpen(true);
     }
@@ -60,7 +61,7 @@ const GameHeader = ({ gameData }) => {
         // Опціонально: додати логіку для відображення сповіщення про помилку
       });
   };
-  
+
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
@@ -70,7 +71,23 @@ const GameHeader = ({ gameData }) => {
   };
 
   const handleViewCart = () => {
-    navigate('/basket');
+
+    console.log(gameData.id);
+    const userId = localStorage.getItem('id_user');
+    debugger
+    fetch(`http://localhost:8070/basket?user_id=${userId}`, {
+
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ game_id: gameData.id }),
+    })
+      .then(() => {
+        debugger
+        navigate(`/basket`);
+      })
+      .catch(error => { debugger; console.error('Error adding to basket:', error) });
   };
 
   return (
@@ -107,7 +124,7 @@ const GameHeader = ({ gameData }) => {
               Розробник: <Link to={`/publisher/${gameData.developer}`} className="custom-link">{gameData.developer}</Link>
             </Typography>
             <Typography variant="body1" style={{ color: 'white' }}>
-              Видавець: <Link to={`/publisher/${gameData.publisher}`}  className="custom-link">{gameData.publisher}</Link>
+              Видавець: <Link to={`/publisher/${gameData.publisher}`} className="custom-link">{gameData.publisher}</Link>
             </Typography>
             <Typography variant="body1">Дата виходу: {gameData.release_date}</Typography>
           </Box>

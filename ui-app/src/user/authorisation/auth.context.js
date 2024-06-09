@@ -3,7 +3,7 @@ import React, { createContext, useEffect, useState, useContext } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [userRole, setUserRole] = useState('unauthorized');
+  const [userRole, setUserRole] = useState(!!localStorage.getItem('id_user') ? 'authorized' : 'unathorized');
 
   const updateUserRole = (newRole) => {
     setUserRole(newRole);

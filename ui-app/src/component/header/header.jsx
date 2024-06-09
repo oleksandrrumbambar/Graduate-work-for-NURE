@@ -3,22 +3,28 @@ import { AppBar, Toolbar, Typography, Button, Link, Box } from '@mui/material';
 import { useAuth } from '../../user/authorisation/auth.context';
 import { Link as RouterLink } from 'react-router-dom';
 
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+//import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#1976d2',
-    },
-  },
-});
+// const darkTheme = createTheme({
+//   palette: {
+//     mode: 'dark',
+//     primary: {
+//       main: '#1976d2',
+//     },
+//     background: {
+//       default: '#121212',
+//       paper: '#1e1e1e',
+//     },
+//   },
+// });
 
 function Header() {
   const { userRole, handleSignOut } = useAuth();
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    //<ThemeProvider theme={darkTheme}>
+
+    //  <CssBaseline />
       <AppBar position="sticky">
         <Toolbar>
           <Typography variant="h6" component="div">
@@ -70,7 +76,7 @@ function Header() {
           </Typography>
         </Toolbar>
       </AppBar>
-    </ThemeProvider>
+    //</ThemeProvider>
   );
 }
 

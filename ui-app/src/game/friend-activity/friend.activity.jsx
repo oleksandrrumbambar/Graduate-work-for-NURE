@@ -3,7 +3,7 @@ import '../game.page.css';
 
 const FriendActivity = ({ friendActivity }) => {
   return (
-    <div className="half-width">
+    <div>
       <div className="game-friend-activity">
         <h4>Ця гра є у ваших друзів</h4>
         <div className="friend-grid">

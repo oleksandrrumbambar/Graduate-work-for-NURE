@@ -8,6 +8,7 @@ import 'swiper/css/thumbs';
 import 'swiper/css/pagination';
 import './game.page.css';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
 import GameGallery from './game-gallery/game.gallery';
 import GameDescription from './game-description/game.description';
@@ -58,9 +59,15 @@ const Game = () => {
           <GameHeader gameData={gameData} />
         </div>
         <hr />
-        <div className="container">
-          <FriendActivity friendActivity={gameData.friend_activity} />
-          <GameRating rating={gameData.rating} ageRatingImage={gameData.age_rating_image} ageRating={gameData.age_rating} />
+        <div>
+          <Grid container>
+            <Grid item xs={12} md={6}>
+              <FriendActivity friendActivity={gameData.friend_activity} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <GameRating rating={gameData.rating} ageRatingImage={gameData.age_rating_image} ageRating={gameData.age_rating} />
+            </Grid>
+          </Grid>
         </div>
         <hr />
         <GameLanguage languages={gameData.languages} />

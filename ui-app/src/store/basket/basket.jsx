@@ -55,7 +55,6 @@ function CartPage() {
             },
             body: JSON.stringify({ game_id: gameId }),
         })
-            .then(response => response.json())
             .then(() => {
                 // Оновлення списку бажаного після видалення гри
                 const updatedBasket = basket.filter(id => id !== gameId);
@@ -73,7 +72,7 @@ function CartPage() {
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={8}>
                         {products.map((product) => (
-                            <Card key={product.id} sx={{ display: 'flex', marginBottom: '20px' }}>
+                            <Card key={product.id} sx={{ display: 'flex', marginBottom: '40px' }}>
                                 <CardMedia
                                     component="img"
                                     sx={{ width: 300 }}
@@ -128,6 +127,7 @@ function CartPage() {
                     </Grid>
                 </Grid>
             </Container>
+            <hr style={{marginTop: '20px'}}></hr>
         </ThemeProvider>
     );
 }

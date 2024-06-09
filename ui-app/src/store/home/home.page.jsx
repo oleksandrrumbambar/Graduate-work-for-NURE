@@ -17,13 +17,11 @@ const darkTheme = createTheme({
 function Home() {
 
   return (
-    <ThemeProvider theme={darkTheme}>
     <div className="home">
       <TopSlider />
       <hr></hr>
       <TableAllGames />
     </div>
-    </ThemeProvider>
   );
 }
 

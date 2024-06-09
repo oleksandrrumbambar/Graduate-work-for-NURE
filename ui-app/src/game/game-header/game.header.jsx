@@ -44,10 +44,23 @@ const GameHeader = ({ gameData }) => {
   };
 
   const handleAddToWhislist = () => {
-
+    fetch(`http://localhost:8070/wishlist?user_id=${localStorage.getItem('id_user')}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ game_id: gameData.id }), // Передаємо ID гри
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Опціонально: додати логіку для відображення сповіщення про успішне додавання до списку бажаного
+      })
+      .catch(error => {
+        console.error('Error adding game to wishlist:', error);
+        // Опціонально: додати логіку для відображення сповіщення про помилку
+      });
   };
-
-
+  
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };

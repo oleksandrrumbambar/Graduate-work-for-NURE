@@ -42,6 +42,24 @@ function WishListPage() {
         fetchGameInfo();
     }, [wishlist]);
 
+    const handleRemoveFromWishlist = (gameId) => {
+        const userId = localStorage.getItem('id_user');
+        fetch(`http://localhost:8070/wishlist/remove?user_id=${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ game_id: gameId }),
+        })
+        .then(response => response.json())
+        .then(() => {
+            // Оновлення списку бажаного після видалення гри
+            const updatedWishlist = wishlist.filter(id => id !== gameId);
+            setWishlist(updatedWishlist);
+        })
+        .catch(error => console.error('Error removing game from wishlist:', error));
+    };
+
     return (
         <ThemeProvider theme={darkTheme}>
             <Container maxWidth="lg">
@@ -88,7 +106,13 @@ function WishListPage() {
                                         </Typography>
                                         <div style={{ marginLeft: 'auto' }}>
                                             <Button size="small" color="primary">До кошика</Button>
-                                            <Button size="small" color="primary">Вилучити</Button>
+                                            <Button 
+                                                size="small" 
+                                                color="primary" 
+                                                onClick={() => handleRemoveFromWishlist(game.id)}
+                                            >
+                                                Вилучити
+                                            </Button>
                                         </div>
                                     </CardActions>
                                 </div>

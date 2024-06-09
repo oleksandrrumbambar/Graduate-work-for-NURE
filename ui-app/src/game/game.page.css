@@ -212,6 +212,19 @@
     margin-left: 10px;
 }
 
-.game-reviews{
+.game-reviews {
     text-align: left;
+}
+
+.custom-link {
+    color: white !important;
+    text-decoration: none;
+}
+
+.custom-link:active {
+    color: rgba(255, 255, 255, 0.842) !important;
+}
+
+.custom-link:hover {
+    color: #188a8d !important;
 }

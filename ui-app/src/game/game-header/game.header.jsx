@@ -69,11 +69,11 @@ const GameHeader = ({ gameData }) => {
           <Box className="game-details" sx={{ marginTop: 2 }}>
             <Typography variant="body1">{gameData.short_description}</Typography>
             <hr></hr>
-            <Typography variant="body1">
-              Розробник: <Link to={`/publisher/${gameData.developer}`}>{gameData.developer}</Link>
+            <Typography variant="body1" style={{ color: 'white' }}>
+              Розробник: <Link to={`/publisher/${gameData.developer}`} className="custom-link">{gameData.developer}</Link>
             </Typography>
-            <Typography variant="body1">
-              Видавець: <Link to={`/publisher/${gameData.publisher}`}>{gameData.publisher}</Link>
+            <Typography variant="body1" style={{ color: 'white' }}>
+              Видавець: <Link to={`/publisher/${gameData.publisher}`}  className="custom-link">{gameData.publisher}</Link>
             </Typography>
             <Typography variant="body1">Дата виходу: {gameData.release_date}</Typography>
           </Box>

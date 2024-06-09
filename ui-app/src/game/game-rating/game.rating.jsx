@@ -2,6 +2,18 @@ import React from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import '../game.page.css';
 
+const getColor = (rating) => {
+  if (rating >= 75) {
+    return 'success'; // зелений
+  } else if (rating >= 50) {
+    return 'warning'; // жовтий
+  } else if (rating >= 25) {
+    return 'info'; // цигловий
+  } else {
+    return 'error'; // червоний
+  }
+};
+
 const GameRating = ({ rating, ageRatingImage, ageRating }) => {
   return (
     <div className="half-width">
@@ -10,7 +22,13 @@ const GameRating = ({ rating, ageRatingImage, ageRating }) => {
           {['store', 'friends', 'community'].map((key, index) => (
             <div className="assessment-div" key={index}>
               <Box position="relative" display="inline-flex">
-                <CircularProgress determinate value={rating[key]} color="success" size="lg" variant="plain" />
+                <CircularProgress
+                  variant="determinate"
+                  value={rating[key]}
+                  color={getColor(rating[key])}
+                  size={70} 
+                  thickness={3} 
+                />
                 <Box
                   top={0}
                   left={0}
@@ -21,7 +39,7 @@ const GameRating = ({ rating, ageRatingImage, ageRating }) => {
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <Typography variant="caption" component="div" color="white">
+                  <Typography variant="h4" component="div" color="white" style={{ textShadow: '0 0 3px rgba(0, 0, 0, 0.5)' }}>
                     {rating[key]}
                   </Typography>
                 </Box>

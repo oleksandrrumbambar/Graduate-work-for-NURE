@@ -43,6 +43,11 @@ const GameHeader = ({ gameData }) => {
     }
   };
 
+  const handleAddToWhislist = () => {
+
+  };
+
+
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
@@ -75,6 +80,7 @@ const GameHeader = ({ gameData }) => {
               <Button
                 variant="outlined"
                 color="primary"
+                onClick={handleAddToWhislist}
                 sx={{ marginTop: 1, width: '100%' }}
               >
                 До списку бажаного

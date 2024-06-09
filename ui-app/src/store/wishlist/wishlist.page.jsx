@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Button, Card, CardMedia, CardContent, CardActions, TextField, Box } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
@@ -16,53 +16,45 @@ const darkTheme = createTheme({
     },
 });
 
-const games = [
-    {
-        id: 1,
-        name: "The Walking Dead: The Telltale Definitive Series",
-        image: "https://via.placeholder.com/151",
-        reviews: "УСІ РЕЦЕНЗІЇ: ВИКЛЮЧНО СХВАЛЬНІ",
-        releaseDate: "29 ЖОВТ. 2020",
-        discount: 75,
-        price: 231,
-        originalPrice: 925
-    },
-    {
-        id: 2,
-        name: "Devil May Cry 4 Special Edition",
-        image: "https://via.placeholder.com/151",
-        reviews: "УСІ РЕЦЕНЗІЇ: ДУЖЕ СХВАЛЬНІ",
-        releaseDate: "23 ЧЕРВ. 2015",
-        discount: 70,
-        price: 236,
-        originalPrice: 789
-    },
-    {
-        id: 3,
-        name: "Life is Strange: Before the Storm",
-        image: "https://via.placeholder.com/151",
-        reviews: "УСІ РЕЦЕНЗІЇ: ДУЖЕ СХВАЛЬНІ",
-        releaseDate: "31 СІЧ. 2021",
-        discount: 60,
-        price: 199.60,
-        originalPrice: 499
-    }
-];
-
 function WishListPage() {
+    const [wishlist, setWishlist] = useState([]);
+    const [gamesInfo, setGamesInfo] = useState([]);
+
+    useEffect(() => {
+        const userId = localStorage.getItem('id_user');
+
+        fetch(`http://localhost:8070/user/gamesWishlist?user_id=${userId}`)
+            .then(response => response.json())
+            .then(data => setWishlist(data.games))
+            .catch(error => console.error('Error fetching wishlist:', error));
+    }, []);
+
+    useEffect(() => {
+        const fetchGameInfo = async () => {
+            const promises = wishlist.map(gameId =>
+                fetch(`http://localhost:8050/game?id=${gameId}`)
+                    .then(response => response.json())
+            );
+            const gamesData = await Promise.all(promises);
+            setGamesInfo(gamesData);
+        };
+
+        fetchGameInfo();
+    }, [wishlist]);
+
     return (
         <ThemeProvider theme={darkTheme}>
             <Container maxWidth="lg">
                 <Box display="flex" alignItems="center" marginTop="20px">
                     <img src="https://via.placeholder.com/50" alt="Profile" style={{ borderRadius: '50%', marginRight: '20px' }} />
-                    <Typography variant="h4" gutterBottom>
+                    <Typography variant="h4" gutterBottom color={"white"}>
                         СПИСОК БАЖАНОГО
                     </Typography>
                 </Box>
                 <TextField
                     fullWidth
                     variant="outlined"
-                    placeholder="Шукати за назвою чи позначкою"
+                    placeholder="Шукати за назвою"
                     margin="normal"
                     InputProps={{
                         style: { backgroundColor: '#2f2f2f', borderRadius: '4px' }
@@ -70,17 +62,17 @@ function WishListPage() {
                 />
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={12}>
-                        {games.map((game) => (
+                        {gamesInfo.map((game) => (
                             <Card key={game.id} sx={{ display: 'flex', marginBottom: '20px' }}>
                                 <CardMedia
                                     component="img"
-                                    sx={{ width: 151 }}
-                                    image={game.image}
+                                    sx={{ width: 300 }}
+                                    image={game.header_image}
                                     alt={game.name}
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                                     <CardContent>
-                                        <Typography component="h5" variant="h6">
+                                        <Typography component="h4" variant="h4">
                                             {game.name}
                                         </Typography>
                                         <Typography variant="body2" color="textSecondary">
@@ -90,12 +82,14 @@ function WishListPage() {
                                             ДАТА ВИХОДУ: {game.releaseDate}
                                         </Typography>
                                     </CardContent>
-                                    <CardActions style={{ justifyContent: 'space-between' }}>
-                                        <Typography variant="body2" color="textSecondary">
-                                            <span style={{ color: 'green', fontWeight: 'bold' }}>-{game.discount}%</span> {game.price}₴
-                                            <span style={{ textDecoration: 'line-through', marginLeft: '10px' }}>{game.originalPrice}₴</span>
+                                    <CardActions disableSpacing>
+                                        <Typography variant="h4" color="textSecondary">
+                                            <span style={{ marginLeft: '10px' }}>{game.price}₴</span>
                                         </Typography>
-                                        <Button size="small" color="primary">До кошика</Button>
+                                        <div style={{ marginLeft: 'auto' }}>
+                                            <Button size="small" color="primary">До кошика</Button>
+                                            <Button size="small" color="primary">Вилучити</Button>
+                                        </div>
                                     </CardActions>
                                 </div>
                             </Card>

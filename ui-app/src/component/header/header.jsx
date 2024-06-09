@@ -30,6 +30,11 @@ function Header() {
           {userRole === 'authorized' ? (
             <>
               <Typography variant="h6" component="div">
+                <Button component={RouterLink} to="/wishlist" color="inherit" underline="none">
+                  Wish List
+                </Button>
+              </Typography>
+              <Typography variant="h6" component="div">
                 <Button component={RouterLink} to={`/profile/${localStorage.getItem('id_user')}`} color="inherit" underline="none">
                   {localStorage.getItem('user_name')}
                 </Button>

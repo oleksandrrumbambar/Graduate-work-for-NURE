@@ -26,7 +26,6 @@ var libraryCollection *mongo.Collection
 var basketCollection *mongo.Collection
 var wishlistCollection *mongo.Collection
 
-
 var library struct {
 	UserID string   `bson:"user" json:"user"`
 	Games  []string `bson:"games" json:"games"`
@@ -168,7 +167,7 @@ func main() {
 	http.HandleFunc("/confirmFriendRequest", confirmFriendRequestHandler)
 	http.HandleFunc("/removeFriend", removeFriendHandler)
 	http.HandleFunc("/friendRequests", getFriendRequestsHandler)
-	
+
 	//
 	http.HandleFunc("/searchUser", searchUserHandler)
 
@@ -177,6 +176,11 @@ func main() {
 
 	// Перевірка статусу дружби
 	http.HandleFunc("/checkFriendship", checkFriendshipHandler)
+
+	// POST запит для додавання елементу до бажаного
+	http.HandleFunc("/wishlist", AddToWishlistHandler)
+	// POST запит для видалення елементу до бажаного
+	http.HandleFunc("/wishlist/remove", RemoveFromWishlistHandler)
 
 	// Створення об'єкту cors для налаштування CORS
 	c := cors.New(cors.Options{
@@ -365,7 +369,7 @@ func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error finding friends", http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Запит на інформацію про друзів з колекції користувачів
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -381,7 +385,6 @@ func getFriendsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		friendsInfo = append(friendsInfo, user)
 	}
-
 
 	// Повернення інформації про друзів користувача у відповідь
 	w.Header().Set("Content-Type", "application/json")
@@ -424,39 +427,39 @@ func findFriendsByID(userID string) ([]string, error) {
 }
 
 func checkFriendshipHandler(w http.ResponseWriter, r *http.Request) {
-    // Перевірка методу запиту
-    if r.Method != http.MethodPost {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
-    // Отримання ID з параметрів запиту
-    user1ID := r.URL.Query().Get("user_id1")
-    user2ID := r.URL.Query().Get("user_id2")
-    if user1ID == "" || user2ID == "" {
-        http.Error(w, "Both user IDs are required", http.StatusBadRequest)
-        return
-    }
-    // Перевірка чи існує "дружба" між користувачами за переданими ID
-    filter := bson.M{
-        "$or": []bson.M{
-            {"user_id_accept": user1ID, "user_id_sent": user2ID},
-            {"user_id_accept": user2ID, "user_id_sent": user1ID},
-        },
-    }
-    // Пошук "дружби" в колекції
-    var friendship bson.M
-    err := friendCollection.FindOne(context.Background(), filter).Decode(&friendship)
-    if err != nil {
-        if errors.Is(err, mongo.ErrNoDocuments) {
-            fmt.Fprintf(w, "No friendship between %s and %s", user1ID, user2ID)
-            return
-        }
-        http.Error(w, "Error checking friendship", http.StatusInternalServerError)
-        return
-    }
-    // Відправлення статусу дружби, якщо знайдено
+	// Перевірка методу запиту
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Отримання ID з параметрів запиту
+	user1ID := r.URL.Query().Get("user_id1")
+	user2ID := r.URL.Query().Get("user_id2")
+	if user1ID == "" || user2ID == "" {
+		http.Error(w, "Both user IDs are required", http.StatusBadRequest)
+		return
+	}
+	// Перевірка чи існує "дружба" між користувачами за переданими ID
+	filter := bson.M{
+		"$or": []bson.M{
+			{"user_id_accept": user1ID, "user_id_sent": user2ID},
+			{"user_id_accept": user2ID, "user_id_sent": user1ID},
+		},
+	}
+	// Пошук "дружби" в колекції
+	var friendship bson.M
+	err := friendCollection.FindOne(context.Background(), filter).Decode(&friendship)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			fmt.Fprintf(w, "No friendship between %s and %s", user1ID, user2ID)
+			return
+		}
+		http.Error(w, "Error checking friendship", http.StatusInternalServerError)
+		return
+	}
+	// Відправлення статусу дружби, якщо знайдено
 	w.Header().Set("Content-Type", "application/json")
-    if err := json.NewEncoder(w).Encode(friendship); err != nil {
+	if err := json.NewEncoder(w).Encode(friendship); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -508,55 +511,109 @@ func getFriendRequestsHandler(w http.ResponseWriter, r *http.Request) {
 
 // getGamesFromBasketByUserIDHandler отримує кошик користувача за його user_id
 func getGamesFromBasketByUserIDHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodGet {
-        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+		return
+	}
 
-    // Отримання параметру user_id з URL
-    userID := r.URL.Query().Get("user_id")
-    if userID == "" {
-        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
-        return
-    }
+	// Отримання параметру user_id з URL
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+		return
+	}
 	//fmt.Println(userID)
 	//fmt.Println(userID)
-    // Пошук ігор у кошику користувача за його user_id
-    var basket Basket
-    err := basketCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&basket)
-    if err != nil {
-        http.Error(w, "Кошик користувача не знайдено", http.StatusNotFound)
-        return
-    }
+	// Пошук ігор у кошику користувача за його user_id
+	var basket Basket
+	err := basketCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&basket)
+	if err != nil {
+		http.Error(w, "Кошик користувача не знайдено", http.StatusNotFound)
+		return
+	}
 
-    // Відправка інформації про ігри з кошика користувача у відповідь
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(basket)
+	// Відправка інформації про ігри з кошика користувача у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(basket)
 }
 
 // getWishlistByUserIDHandler отримує список бажаного користувача за його user_id
 func getGamesFromWishlistByUserIDHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodGet {
-        http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodGet {
+		http.Error(w, "Метод не підтримується", http.StatusMethodNotAllowed)
+		return
+	}
 
-    // Отримання параметру user_id з URL
-    userID := r.URL.Query().Get("user_id")
-    if userID == "" {
-        http.Error(w, "Не вказано user_id", http.StatusBadRequest)
-        return
-    }
+	// Отримання параметру user_id з URL
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "Не вказано user_id", http.StatusBadRequest)
+		return
+	}
 
-    // Пошук ігор у кошику користувача за його user_id
-    var wishlist Wishlist
-    err := wishlistCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&wishlist)
-    if err != nil {
-        http.Error(w, "Кошик користувача не знайдено", http.StatusNotFound)
-        return
-    }
+	// Пошук ігор у кошику користувача за його user_id
+	var wishlist Wishlist
+	err := wishlistCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&wishlist)
+	if err != nil {
+		http.Error(w, "Кошик користувача не знайдено", http.StatusNotFound)
+		return
+	}
 
-    // Відправка інформації про ігри з кошика користувача у відповідь
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(wishlist)
+	// Відправка інформації про ігри з кошика користувача у відповідь
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(wishlist)
+}
+
+// AddToWishlistHandler обробник HTTP POST запиту для додавання елементу до бажаного користувача.
+func AddToWishlistHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("user_id") // Отримання ID користувача з параметру запиту
+
+	// Декодування тіла запиту для отримання ID гри
+	var gameID struct {
+		GameID string `json:"game_id"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&gameID)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Оновлення запису користувача за його ID для додавання нового ID гри
+	filter := bson.M{"user": userID}
+	update := bson.M{"$addToSet": bson.M{"games": gameID.GameID}}
+	_, err = wishlistCollection.UpdateOne(context.Background(), filter, update, options.Update().SetUpsert(true))
+	if err != nil {
+		http.Error(w, "Error updating wishlist", http.StatusInternalServerError)
+		return
+	}
+
+	// Відправка відповіді про успішне додавання до бажаного
+	w.WriteHeader(http.StatusCreated)
+}
+
+// RemoveFromWishlistHandler - обробник HTTP POST запиту для видалення елементу зі списку бажаного користувача.
+func RemoveFromWishlistHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("user_id") // Отримання ID користувача з параметру запиту
+
+	// Декодування тіла запиту для отримання ID гри
+	var gameID struct {
+		GameID string `json:"game_id"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&gameID)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	// Оновлення запису користувача за його ID для видалення ID гри зі списку бажаного
+	filter := bson.M{"user": userID}
+	update := bson.M{"$pull": bson.M{"games": gameID.GameID}}
+	_, err = wishlistCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		http.Error(w, "Error updating wishlist", http.StatusInternalServerError)
+		return
+	}
+
+	// Відправка відповіді про успішне видалення зі списку бажаного
+	w.WriteHeader(http.StatusOK)
 }

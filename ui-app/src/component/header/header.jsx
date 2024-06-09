@@ -30,6 +30,11 @@ function Header() {
           {userRole === 'authorized' ? (
             <>
               <Typography variant="h6" component="div">
+                <Button component={RouterLink} to="/basket" color="inherit" underline="none">
+                  Basket
+                </Button>
+              </Typography>
+              <Typography variant="h6" component="div">
                 <Button component={RouterLink} to="/wishlist" color="inherit" underline="none">
                   Wish List
                 </Button>

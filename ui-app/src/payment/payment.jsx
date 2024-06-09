@@ -1,17 +1,22 @@
 import React from 'react';
 import { Container, Typography, TextField, Button, Grid, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useLocation } from 'react-router-dom';
 
 const darkTheme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            main: '#1976d2',
+            main: '#188a8d',
         },
     },
 });
 
 function PaymentPage() {
+    // Обробка отриманих даних
+    console.log('User ID:', localStorage.getItem('id_user'));
+    console.log('Basket:', localStorage.getItem('basket'));
+
     return (
         <ThemeProvider theme={darkTheme}>
             <Container maxWidth="md">

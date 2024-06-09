@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Button, Card, CardMedia, CardContent, CardActions, Select, MenuItem, Divider } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
+import axios from 'axios'; // Імпортуйте axios
+import { useLocation } from 'react-router-dom';
 
 const darkTheme = createTheme({
     palette: {
@@ -17,30 +19,49 @@ const darkTheme = createTheme({
     },
 });
 
-const products = [
-    {
-        id: 1,
-        name: "Street Fighter™ 6",
-        image: "https://via.placeholder.com/151",
-        price: 1799,
-        discount: 50
-    },
-    {
-        id: 2,
-        name: "MechWarrior 5: Mercenaries",
-        image: "https://via.placeholder.com/151",
-        price: 379,
-        discount: 60
-    }
-];
-
 function CartPage() {
-    // Порахуйте загальну ціну
-    const totalPrice = products.reduce((acc, curr) => acc + curr.price, 0);
+    const location = useLocation();
+    const [products, setProducts] = useState([]);
+    const [basket, setBasket] = useState([]);
+    const [totalPrice, setTotalPrice] = useState(0);
+    useEffect(() => {
+        const userId = localStorage.getItem('id_user');
 
-    const handleRemoveFromCart = (productId) => {
-        // Ваш код для видалення товару з кошика
-        console.log(`Товар з ID ${productId} видалено з кошика`);
+        fetch(`http://localhost:8070/user/gamesBasket?user_id=${userId}`)
+            .then(response => response.json())
+            .then(data => setBasket(data.games))
+            .catch(error => console.error('Error fetching wishlist:', error));
+    }, []);
+
+    useEffect(() => {
+        const fetchGameInfo = async () => {
+            const promises = basket.map(gameId =>
+                fetch(`http://localhost:8050/game?id=${gameId}`)
+                    .then(response => response.json())
+            );
+            const gamesData = await Promise.all(promises);
+            setProducts(gamesData);
+        };
+        setTotalPrice(parseInt(products.reduce((acc, curr) => acc + parseInt(curr.price), 0), 10));
+        fetchGameInfo();
+    }, [basket]);
+
+    const handleRemoveFromCart = (gameId) => {
+        const userId = localStorage.getItem('id_user');
+        fetch(`http://localhost:8070/basket/remove?user_id=${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ game_id: gameId }),
+        })
+            .then(response => response.json())
+            .then(() => {
+                // Оновлення списку бажаного після видалення гри
+                const updatedBasket = basket.filter(id => id !== gameId);
+                setBasket(updatedBasket);
+            })
+            .catch(error => console.error('Error removing game from basket:', error));
     };
 
     return (
@@ -55,8 +76,8 @@ function CartPage() {
                             <Card key={product.id} sx={{ display: 'flex', marginBottom: '20px' }}>
                                 <CardMedia
                                     component="img"
-                                    sx={{ width: 151 }}
-                                    image={product.image}
+                                    sx={{ width: 300 }}
+                                    image={product.header_image}
                                     alt={product.name}
                                 />
                                 <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -66,7 +87,7 @@ function CartPage() {
                                         </Typography>
                                     </CardContent>
                                     <CardActions style={{ justifyContent: 'space-between' }}>
-                                        <Typography variant="body2" color="textSecondary">
+                                        <Typography variant="h5" color="textSecondary">
                                             {product.price}₴
                                         </Typography>
                                         <div>
@@ -76,7 +97,7 @@ function CartPage() {
                                 </div>
                             </Card>
                         ))}
-                        <Button component={RouterLink} to="/" variant="outlined" color="primary" style={{ marginTop: '20px' }}>
+                        <Button component={RouterLink} to="/" variant="contained" color="primary" style={{ marginTop: '20px', marginBottom: '400px' }}>
                             Назад до крамниці
                         </Button>
                     </Grid>
@@ -87,11 +108,18 @@ function CartPage() {
                                     Попередній підсумок
                                 </Typography>
                                 <Typography variant="h5" style={{ fontWeight: 'bold' }}>
-                                    Загальна вартість: {totalPrice}₴
+                                    Загальна вартість: {parseInt(products.reduce((acc, curr) => acc + parseInt(curr.price), 0), 10)}₴
                                 </Typography>
                             </CardContent>
                         </Card>
-                        <Button component={RouterLink} to="/payment" variant="outlined" color="primary" style={{ marginTop: '20px' }}>
+                        <Button
+                            component={RouterLink}
+                            to={{ pathname: "/payment" }}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => localStorage.setItem('basket', JSON.stringify(basket))}
+                            style={{ marginTop: '20px' }}
+                        >
                             Оплатити
                         </Button>
                     </Grid>

@@ -101,7 +101,7 @@ function TopSlider() {
                                             <CardMedia
                                                 component="img"
                                                 alt={game.name}
-                                                height="405px"
+                                                height="409px"
                                                 image={activeMainImage[game.id]}
                                                 title={game.name}
                                             />

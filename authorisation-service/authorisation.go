@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -18,6 +17,10 @@ import (
 
 var client *mongo.Client
 var userCollection *mongo.Collection
+
+var libraryCollection *mongo.Collection
+var basketCollection *mongo.Collection
+var wishlistCollection *mongo.Collection
 
 func connectToMongoDB() {
 	var err error
@@ -45,6 +48,9 @@ func connectToMongoDB() {
 	fmt.Println("Підключення до MongoDB успішне")
 
 	userCollection = client.Database("Users").Collection("User")
+	libraryCollection = client.Database("Users").Collection("Library")
+	basketCollection = client.Database("Users").Collection("Basket")
+	wishlistCollection = client.Database("Users").Collection("WishList")
 }
 
 // User структура представляє користувача
@@ -166,19 +172,6 @@ func loadUsers() {
 	connectToMongoDB()
 }
 
-// Збереження користувачів у JSON файл
-func saveUsers() {
-	data, err := json.Marshal(users)
-	if err != nil {
-		fmt.Println("Помилка кодування JSON:", err)
-		return
-	}
-
-	err = ioutil.WriteFile("../json/user.json", data, 0644)
-	if err != nil {
-		fmt.Println("Помилка запису у файл:", err)
-	}
-}
 
 // Перевірка аутифікації користувача за допомогою email та пароля
 func authenticateUser(email, password string) *User {

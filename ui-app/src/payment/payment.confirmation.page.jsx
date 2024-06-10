@@ -9,7 +9,8 @@ import {
   Typography,
   Button
 } from '@mui/material';
-import './payment.confirmation.css';  // Ensure you have this CSS file in your project
+import './payment.confirmation.css'; 
+import { Link as RouterLink } from 'react-router-dom'; // Ensure you have this CSS file in your project
 
 const darkTheme = createTheme({
   palette: {
@@ -113,6 +114,7 @@ function PaymentConfirmationPage() {
             Загальна сума: {totalPrice.toFixed(2)}₴
           </Typography>
           <Button
+          component={RouterLink} to="/library"
             variant="contained"
             color="primary"
             size="large"

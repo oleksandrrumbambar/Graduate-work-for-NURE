@@ -6,6 +6,9 @@ import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 const darkTheme = createTheme({
     palette: {
         mode: 'dark',
+        primary: {
+            main: '#188a8d',
+          },
     },
 });
 

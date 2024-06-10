@@ -1,175 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Container, CssBaseline, Grid, Typography, TextField, Button, Paper, ThemeProvider, createTheme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from "react-router-dom";
+import { Grid, Card, CardMedia, Typography, Container, CssBaseline, TextField, Button, Box } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#188a8d',
+        },
+    },
 });
 
-const ReviewPage = () => {
-  const [gamesWithoutReviews, setGamesWithoutReviews] = useState([]);
-  const [gamesWithReviews, setGamesWithReviews] = useState([]);
-  const [selectedGame, setSelectedGame] = useState(null);
-  const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    // Fetch games without reviews
-    axios.get('/review/games/without-reviews')
-      .then(response => setGamesWithoutReviews(response.data))
-      .catch(error => console.error('Error fetching games without reviews:', error));
-
-    // Fetch games with reviews
-    axios.get('/review/games/with-reviews')
-      .then(response => setGamesWithReviews(response.data))
-      .catch(error => console.error('Error fetching games with reviews:', error));
-  }, []);
-
-  const handleGameSelect = (game, hasReview) => {
-    setSelectedGame(game);
-    if (hasReview) {
-      // Fetch review for the selected game
-      axios.get(`/review?user_id=userId&game_id=${game.id}`)
-        .then(response => {
-          const review = response.data[0];
-          setReviewText(review.review_text);
-          setRating(review.rating);
-          setIsEditing(true);
-        })
-        .catch(error => console.error('Error fetching review:', error));
-    } else {
-      setReviewText('');
-      setRating(0);
-      setIsEditing(false);
-    }
-  };
-
-  const handleReviewSubmit = () => {
-    const review = {
-      user_id: 'userId',
-      game_id: selectedGame.id,
-      review_text: reviewText,
-      rating: rating,
-    };
-
-    axios.post('/review', review)
-      .then(() => {
-        setGamesWithoutReviews(gamesWithoutReviews.filter(game => game.id !== selectedGame.id));
-        setGamesWithReviews([...gamesWithReviews, selectedGame]);
-        setSelectedGame(null);
-        setReviewText('');
-        setRating(0);
-      })
-      .catch(error => console.error('Error submitting review:', error));
-  };
-
-  const handleReviewUpdate = () => {
-    const review = {
-      user_id: 'userId',
-      game_id: selectedGame.id,
-      review_text: reviewText,
-      rating: rating,
-    };
-
-    axios.put(`/review?user_id=userId&game_id=${selectedGame.id}`, review)
-      .then(() => {
-        setSelectedGame(null);
-        setReviewText('');
-        setRating(0);
-        setIsEditing(false);
-      })
-      .catch(error => console.error('Error updating review:', error));
-  };
-
-  const handleReviewDelete = () => {
-    axios.delete(`/review?user_id=userId&game_id=${selectedGame.id}`)
-      .then(() => {
-        setGamesWithReviews(gamesWithReviews.filter(game => game.id !== selectedGame.id));
-        setGamesWithoutReviews([...gamesWithoutReviews, selectedGame]);
-        setSelectedGame(null);
-        setReviewText('');
-        setRating(0);
-        setIsEditing(false);
-      })
-      .catch(error => console.error('Error deleting review:', error));
-  };
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Container maxWidth="lg">
-        <Grid container spacing={3}>
-          <Grid item xs={4}>
-            <Paper style={{ padding: 16 }}>
-              <Typography variant="h6">Games Without Reviews</Typography>
-              {gamesWithoutReviews.map(game => (
-                <Box key={game.id} onClick={() => handleGameSelect(game, false)} style={{ cursor: 'pointer', margin: '8px 0' }}>
-                  {game.name}
-                </Box>
-              ))}
-            </Paper>
-          </Grid>
-          <Grid item xs={4}>
-            <Paper style={{ padding: 16 }}>
-              {selectedGame ? (
-                <>
-                  <Typography variant="h6">Review for {selectedGame.name}</Typography>
-                  <TextField
-                    multiline
-                    rows={4}
-                    variant="outlined"
-                    fullWidth
-                    label="Review Text"
-                    value={reviewText}
-                    onChange={e => setReviewText(e.target.value)}
-                    style={{ margin: '8px 0' }}
-                  />
-                  <TextField
-                    type="number"
-                    variant="outlined"
-                    fullWidth
-                    label="Rating"
-                    value={rating}
-                    onChange={e => setRating(e.target.value)}
-                    style={{ margin: '8px 0' }}
-                  />
-                  {isEditing ? (
-                    <>
-                      <Button variant="contained" color="primary" onClick={handleReviewUpdate} style={{ marginRight: 8 }}>
-                        Update Review
-                      </Button>
-                      <Button variant="contained" color="error" onClick={handleReviewDelete}>
-                        Delete Review
-                      </Button>
-                    </>
-                  ) : (
-                    <Button variant="contained" color="primary" onClick={handleReviewSubmit}>
-                      Submit Review
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Typography variant="body1">Select a game to review</Typography>
-              )}
-            </Paper>
-          </Grid>
-          <Grid item xs={4}>
-            <Paper style={{ padding: 16 }}>
-              <Typography variant="h6">Games With Reviews</Typography>
-              {gamesWithReviews.map(game => (
-                <Box key={game.id} onClick={() => handleGameSelect(game, true)} style={{ cursor: 'pointer', margin: '8px 0' }}>
-                  {game.name}
-                </Box>
-              ))}
-            </Paper>
-          </Grid>
-        </Grid>
-      </Container>
-    </ThemeProvider>
-  );
+const fetchGamesData = async (gameIds) => {
+    const gamePromises = gameIds.map((gameId) => (
+        axios.get(`http://localhost:8050/game?id=${gameId}`)
+    ));
+    const gameResponses = await Promise.all(gamePromises);
+    return gameResponses.map((response) => response.data);
 };
 
-export default ReviewPage;
+function GameList() {
+    const [gamesWithoutReviews, setGamesWithoutReviews] = useState([]);
+    const [gamesWithReviews, setGamesWithReviews] = useState([]);
+    const [selectedGame, setSelectedGame] = useState(null);
+    const [review, setReview] = useState('');
+    const [rating, setRating] = useState(0);
+    const [isEditMode, setIsEditMode] = useState(false);
+
+    useEffect(() => {
+        const fetchGameLists = async () => {
+            try {
+                const userId = localStorage.getItem('id_user'); // Replace with actual user ID
+                const response = await axios.get(`http://localhost:8090/review/users/games?user_id=${userId}`);
+                const { gamesWithReviews: withReviews, gamesWithoutReviews: withoutReviews } = response.data;
+
+                const [withoutReviewGamesData, withReviewGamesData] = await Promise.all([
+                    fetchGamesData(withoutReviews),
+                    fetchGamesData(withReviews),
+                ]);
+
+                setGamesWithoutReviews(withoutReviewGamesData);
+                setGamesWithReviews(withReviewGamesData);
+            } catch (error) {
+                console.error('Error fetching game lists:', error);
+            }
+        };
+
+        fetchGameLists();
+    }, []);
+
+    const handleGameClick = async (game) => {
+        setSelectedGame(game);
+        setReview('');
+        setRating(0);
+        setIsEditMode(!!game.review_text); // Check if game has a review already
+
+        try {
+            //debugger
+            const userId = localStorage.getItem('id_user'); // Replace with actual user ID
+            const response = await axios.get(`http://localhost:8090/review?user_id=${userId}&game_id=${game.id}`);
+            // Дістаємо review_text та rating з відповіді, де game_id === game.id
+            const { review_text, rating } = response.data.find(review => review.game_id === game.id) || {};
+            setReview(review_text || '');
+            setRating(rating || 0);
+
+            // Оновлюємо isEditMode в залежності від наявності рецензії
+            setIsEditMode(!!review_text);
+        } catch (error) {
+            console.error('Error fetching review:', error);
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        try {
+            //debugger
+            const userId = localStorage.getItem('id_user'); // Replace with actual user ID
+            const gameId = selectedGame.id;
+            if (isEditMode) {
+                //debugger
+                await axios.put(`http://localhost:8090/review?user_id=${userId}&game_id=${gameId}`, {
+                    review_text: review,
+                    rating: parseInt(rating)
+                });
+            } else {
+                await axios.post(`http://localhost:8090/review`, {
+                    user_id: userId,
+                    game_id: gameId,
+                    review_text: review,
+                    rating: parseInt(rating)
+                });
+            }
+            // Refresh game list after review submission
+            handleGameClick(selectedGame);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+        }
+    };
+
+    const handleDeleteReview = async () => {
+        try {
+            const userId = localStorage.getItem('id_user'); // Replace with actual user ID
+            const gameId = selectedGame.id;
+            await axios.delete(`http://localhost:8090/review?user_id=${userId}&game_id=${gameId}`);
+            // Refresh game list after review deletion
+            handleGameClick(selectedGame);
+        } catch (error) {
+            console.error('Error deleting review:', error);
+        }
+    };
+
+    return (
+        <ThemeProvider theme={darkTheme}>
+            <CssBaseline />
+            <Container>
+                <Typography variant="h4" gutterBottom align="center">Games</Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
+                        <Typography variant="h5" gutterBottom align="center">Games Without Reviews</Typography>
+                        <Grid container direction="column" spacing={2}>
+                            {gamesWithoutReviews.map((game) => (
+                                <Grid item key={game.id}>
+                                    <Card sx={{ cursor: 'pointer' }} onClick={() => handleGameClick(game)}>
+                                        <CardMedia
+                                            component="img"
+                                            sx={{ width: '100%', objectFit: 'cover' }}
+                                            image={game.header_image}
+                                            alt={game.name}
+                                        />
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            {selectedGame ? (
+                                <>
+                                    <CardMedia
+                                        component="img"
+                                        sx={{ width: '100%', objectFit: 'cover', maxHeight: 300 }}
+                                        image={selectedGame.header_image}
+                                        alt={selectedGame.name}
+                                    />
+                                    <TextField
+                                        label="Write your review"
+                                        multiline
+                                        rows={4}
+                                        fullWidth
+                                        value={review}
+                                        onChange={(e) => setReview(e.target.value)}
+                                        sx={{ mt: 2 }}
+                                    />
+                                    <TextField
+                                        type="number"
+                                        label="Rating (0-100)"
+                                        fullWidth
+                                        value={rating}
+                                        onChange={(e) => setRating(e.target.value)}
+                                        sx={{ mt: 2 }}
+                                    />
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleSubmitReview}
+                                        sx={{ mt: 2 }}
+                                    >
+                                        {isEditMode ? 'Update Review' : 'Submit Review'}
+                                    </Button>
+                                    {isEditMode  && (
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={handleDeleteReview}
+                                            sx={{ mt: 2 }}
+                                        >
+                                            Delete Review
+                                        </Button>
+                                    )}
+                                </>
+                            ) : (
+                                <Typography variant="h6" align="center">
+                                    Select a game to write a review
+                                </Typography>
+                            )}
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                        <Typography variant="h5" gutterBottom align="center">Games With Reviews</Typography>
+                        <Grid container direction="column" spacing={2}>
+                            {gamesWithReviews.map((game) => (
+                                <Grid item key={game.id}>
+                                    <Card onClick={() => handleGameClick(game)}>
+                                        <CardMedia
+                                            component="img"
+                                            sx={{ width: '100%', objectFit: 'cover' }}
+                                            image={game.header_image}
+                                            alt={game.name}
+                                        />
+                                    </Card>
+                                </Grid>
+
+                            ))}
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Container >
+        </ThemeProvider >
+    );
+}
+
+export default GameList;

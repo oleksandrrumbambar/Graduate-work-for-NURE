@@ -20,6 +20,7 @@ import BackgroundVideo from './BackgroundVideo';
 import PaymentConfirmationPage from './payment/payment.confirmation.page';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import FranchisePage from './game/franchise/franchise.page';
+import ReviewPage from './review/review';
 
 const darkTheme = createTheme({
   palette: {
@@ -53,6 +54,7 @@ function AppRouter() {
           <Route path='/wishlist' element={<WishListPage />} />
           <Route path='/confirmpay' element={<PaymentConfirmationPage />} />
           <Route path='/franchise/:id' element={<FranchisePage />} />
+          <Route path='/review' element={<ReviewPage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
         </ThemeProvider>

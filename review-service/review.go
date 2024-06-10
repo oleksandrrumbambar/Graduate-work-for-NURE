@@ -15,6 +15,7 @@ import (
 )
 
 var reviewCollection *mongo.Collection
+var libraryCollection *mongo.Collection
 
 func connectToMongoDB() {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
@@ -41,6 +42,7 @@ func connectToMongoDB() {
 	fmt.Println("Connected to MongoDB successfully")
 
 	reviewCollection = client.Database("Games").Collection("Review")
+	libraryCollection = client.Database("Users").Collection("Library")
 }
 
 type Review struct {
@@ -55,7 +57,7 @@ func main() {
 	connectToMongoDB()
 
 	http.HandleFunc("/review", handleReviewRequests)
-
+	http.HandleFunc("/review/users/games", getGamesForUser)
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
@@ -182,4 +184,66 @@ func deleteReviewByUserIDAndGameID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func getGamesForUser(w http.ResponseWriter, r *http.Request) {
+	// Отримання параметра user_id з URL-запиту
+	userID := r.URL.Query().Get("user_id")
+
+	// Перевірка, чи вказаний параметр
+	if userID == "" {
+		http.Error(w, "User_id is required", http.StatusBadRequest)
+		return
+	}
+
+	// Пошук ігор в бібліотеці користувача
+	var userLibrary struct {
+		Games []string `bson:"games"`
+	}
+	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&userLibrary)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Якщо бібліотека користувача порожня, відправляємо порожній список
+			jsonResponse, _ := json.Marshal([]string{})
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(jsonResponse)
+			return
+		} else {
+			http.Error(w, "Failed to fetch user library", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Створення списку ігор з відгуками і без
+	gamesWithReviews := make([]string, 0)
+	gamesWithoutReviews := make([]string, 0)
+
+	// Перевірка наявності відгуку для кожної гри в бібліотеці користувача
+	for _, gameID := range userLibrary.Games {
+		var review struct {
+			ID primitive.ObjectID `bson:"_id,omitempty"`
+		}
+		err = reviewCollection.FindOne(context.Background(), bson.M{"user_id": userID, "game_id": gameID}).Decode(&review)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				// Якщо відгук відсутній, додаємо гру до списку без відгуків
+				gamesWithoutReviews = append(gamesWithoutReviews, gameID)
+			} else {
+				http.Error(w, "Failed to fetch reviews", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			// Якщо відгук для гри знайдено, додаємо гру до списку з відгуками
+			gamesWithReviews = append(gamesWithReviews, gameID)
+		}
+	}
+
+	// Відправка списків ігор з відгуками і без відгуків
+	response := map[string][]string{
+		"gamesWithReviews":    gamesWithReviews,
+		"gamesWithoutReviews": gamesWithoutReviews,
+	}
+	jsonResponse, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
 }

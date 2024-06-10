@@ -58,6 +58,9 @@ func main() {
 
 	http.HandleFunc("/review", handleReviewRequests)
 	http.HandleFunc("/review/users/games", getGamesForUser)
+	http.HandleFunc("/reviews/user", getReviewsByUserID)
+	http.HandleFunc("/reviews/game", getReviewsByGameID)
+	
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
@@ -246,4 +249,56 @@ func getGamesForUser(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, _ := json.Marshal(response)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
+}
+
+func getReviewsByUserID(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("user_id")
+
+	if userID == "" {
+		http.Error(w, "User_id is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := bson.M{"user_id": userID}
+	cursor, err := reviewCollection.Find(context.Background(), filter)
+	if err != nil {
+		http.Error(w, "Error fetching reviews", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	var reviews []Review
+	if err = cursor.All(context.Background(), &reviews); err != nil {
+		http.Error(w, "Error processing reviews", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(reviews)
+}
+
+func getReviewsByGameID(w http.ResponseWriter, r *http.Request) {
+	gameID := r.URL.Query().Get("game_id")
+
+	if gameID == "" {
+		http.Error(w, "Game_id is required", http.StatusBadRequest)
+		return
+	}
+
+	filter := bson.M{"game_id": gameID}
+	cursor, err := reviewCollection.Find(context.Background(), filter)
+	if err != nil {
+		http.Error(w, "Error fetching reviews", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	var reviews []Review
+	if err = cursor.All(context.Background(), &reviews); err != nil {
+		http.Error(w, "Error processing reviews", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(reviews)
 }

@@ -141,7 +141,7 @@ function Profile() {
                       {activeTab === 'statistics' && (
                         <>
                           <Typography variant="h6" style={{ paddingBottom: "15px" }}>Statistics</Typography>
-                          <Statistic />
+                          <Statistic userData = {userData} />
                         </>
                       )}
                     </Grid>

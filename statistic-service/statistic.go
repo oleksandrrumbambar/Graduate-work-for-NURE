@@ -26,6 +26,7 @@ var basketCollection *mongo.Collection
 var wishlistCollection *mongo.Collection
 var gameCollection *mongo.Collection
 var paymentCollection *mongo.Collection
+var reviewCollection *mongo.Collection
 
 func connectToMongoDB() {
 	var err error
@@ -59,6 +60,7 @@ func connectToMongoDB() {
 	friendCollection = client.Database("Users").Collection("Friend")
 	gameCollection = client.Database("Games").Collection("Game")
 	paymentCollection = client.Database("Payment").Collection("Payment")
+	reviewCollection = client.Database("Games").Collection("Review")
 }
 
 // User структура представляє користувача
@@ -95,7 +97,7 @@ type Game struct {
 	HeaderImage        string             `bson:"header_image" json:"header_image"`
 	FriendActivity     FriendActivity     `bson:"friend_activity" json:"friend_activity"`
 	CopiesSold         int64              `bson:"copies_sold" json:"copies_sold"`
-	Franchise		   string			  `bson:"franchise" json:"franchise"`
+	Franchise          string             `bson:"franchise" json:"franchise"`
 }
 
 type Rating struct {
@@ -187,6 +189,14 @@ type GameTransaction struct {
 	ID string `json:"id" bson:"id"`
 }
 
+type Review struct {
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	UserID     string             `bson:"user_id" json:"user_id"`
+	GameID     string             `bson:"game_id" json:"game_id"`
+	ReviewText string             `bson:"review_text" json:"review_text"`
+	Rating     int                `bson:"rating" json:"rating"`
+}
+
 func main() {
 	connectToMongoDB()
 
@@ -204,6 +214,13 @@ func main() {
 	http.ListenAndServe(":8030", handler)
 }
 
+// ReviewStats представляє статистику рецензій користувача.
+type ReviewStats struct {
+	HighestRating int `json:"highest_rating"`
+	PositiveCount int `json:"positive_count"`
+	NegativeCount int `json:"negative_count"`
+}
+
 // UserStatistics представляє статистику користувача.
 type UserStatistics struct {
 	FavoriteGenre         string             `json:"favorite_genre"`
@@ -212,6 +229,8 @@ type UserStatistics struct {
 	GamesPurchasedPerYear map[int]int        `json:"games_purchased_per_year"`
 	TotalAccountPrice     float64            `json:"total_account_price"`
 	FavoriteFranchises    []string           `json:"favorite_franchises"`
+	TotalGames            int                `json:"total_games"`
+	ReviewStats           ReviewStats        `json:"review_stats"`
 }
 
 // userStatisticsHandler це HTTP-обробник для кінцевого пункту статистики користувачів.
@@ -223,42 +242,121 @@ func userStatisticsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Вирахувати улюблений жанр користувача.
-	favoriteGenre, err := getFavoriteGenre(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Оголосимо канали для обміну даними та помилками.
+	favoriteGenreCh := make(chan string)
+	genreWeightsCh := make(chan map[string]float64)
+	gameAgePercentagesCh := make(chan map[string]float64)
+	gamesPurchasedPerYearCh := make(chan map[int]int)
+	totalAccountPriceCh := make(chan float64)
+	favoriteFranchisesCh := make(chan []string)
+	gameCountCh := make(chan int)
+	reviewStatsCh := make(chan ReviewStats)
+	errCh := make(chan error)
 
-	// Розрахуйте вагу кожного жанру в бібліотеці користувача.
-	genreWeights, err := getGenreWeights(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Запускаємо горутини для одночасного виконання різних операцій.
+	go func() {
+		// Вирахувати улюблений жанр користувача.
+		favoriteGenre, err := getFavoriteGenre(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		favoriteGenreCh <- favoriteGenre
+	}()
 
-	gameAgePercentages, err := calculateGameAgePercentages(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	go func() {
+		// Розрахуйте вагу кожного жанру в бібліотеці користувача.
+		genreWeights, err := getGenreWeights(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		genreWeightsCh <- genreWeights
+	}()
 
-	gamesPurchasedPerYear, err := getGamesPurchasedPerYear(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	go func() {
+		gameAgePercentages, err := calculateGameAgePercentages(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		gameAgePercentagesCh <- gameAgePercentages
+	}()
 
-	totalAccountPrice, err := getTotalAccountPrice(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	go func() {
+		gamesPurchasedPerYear, err := getGamesPurchasedPerYear(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		gamesPurchasedPerYearCh <- gamesPurchasedPerYear
+	}()
 
-	favoriteFranchises, err := getFavoriteFranchises(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	go func() {
+		totalAccountPrice, err := getTotalAccountPrice(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		totalAccountPriceCh <- totalAccountPrice
+	}()
+
+	go func() {
+		favoriteFranchises, err := getFavoriteFranchises(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		favoriteFranchisesCh <- favoriteFranchises
+	}()
+
+	go func() {
+		// Підрахунок загальної кількості ігор в бібліотеці користувача.
+		gameCount, err := getUserGameCount(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		gameCountCh <- gameCount
+	}()
+
+	go func() {
+		// Отримайте статистику з рецензій.
+		reviewStats, err := getReviewStats(userID)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		reviewStatsCh <- reviewStats
+	}()
+
+	// Збираємо результати з каналів.
+	var (
+		favoriteGenre         string
+		genreWeights          map[string]float64
+		gameAgePercentages    map[string]float64
+		gamesPurchasedPerYear map[int]int
+		totalAccountPrice     float64
+		favoriteFranchises    []string
+		gameCount             int
+		reviewStats           ReviewStats
+	)
+
+	for i := 0; i < 8; i++ {
+		select {
+		case favoriteGenre = <-favoriteGenreCh:
+		case genreWeights = <-genreWeightsCh:
+		case gameAgePercentages = <-gameAgePercentagesCh:
+		case gamesPurchasedPerYear = <-gamesPurchasedPerYearCh:
+		case totalAccountPrice = <-totalAccountPriceCh:
+		case favoriteFranchises = <-favoriteFranchisesCh:
+		case gameCount = <-gameCountCh:
+		case reviewStats = <-reviewStatsCh:
+		case err := <-errCh:
+			// Якщо виникла помилка, відправляємо HTTP-відповідь з відповідним статусом та повідомленням про помилку.
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// Створіть відповідь зі статистикою користувачів.
@@ -269,13 +367,16 @@ func userStatisticsHandler(w http.ResponseWriter, r *http.Request) {
 		GamesPurchasedPerYear: gamesPurchasedPerYear,
 		TotalAccountPrice:     totalAccountPrice,
 		FavoriteFranchises:    favoriteFranchises,
+		TotalGames:            gameCount,
+		ReviewStats:           reviewStats,
 	}
-
 
 	// Перетворіть статистику в JSON і надішліть відповідь.
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }
+
+
 
 // getFavoriteGenre обчислює улюблений жанр користувача на основі його бібліотеки.
 func getFavoriteGenre(userID string) (string, error) {
@@ -604,3 +705,50 @@ func getFavoriteFranchises(userID string) ([]string, error) {
 
 	return favoriteFranchises, nil
 }
+
+// getUserGameCount підраховує загальну кількість ігор у бібліотеці користувача.
+func getUserGameCount(userID string) (int, error) {
+	library := Library{}
+	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
+	if err != nil {
+		return 0, err
+	}
+	return len(library.Games), nil
+}
+
+// getReviewStats обчислює статистику рецензій користувача.
+func getReviewStats(userID string) (ReviewStats, error) {
+	positiveCount := 0
+	negativeCount := 0
+	var highestRating int
+
+	cursor, err := reviewCollection.Find(context.Background(), bson.M{"user_id": userID})
+	if err != nil {
+		return ReviewStats{}, err
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var review Review
+		if err := cursor.Decode(&review); err != nil {
+			return ReviewStats{}, err
+		}
+		if review.Rating > highestRating {
+			highestRating = review.Rating
+		}
+		if review.Rating >= 50 {
+			positiveCount++
+		}
+		if review.Rating < 50 {
+			negativeCount++
+		}
+	}
+
+	return ReviewStats{
+		HighestRating: highestRating,
+		PositiveCount: positiveCount,
+		NegativeCount: negativeCount,
+	}, nil
+}
+
+

@@ -9,6 +9,7 @@ import Activity from './activity/activity';
 import Statistic from './statistic/statistic.user';
 import './profile.page.css'; // Додайте цей рядок для стилів
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+
 function Profile() {
   const { id } = useParams();
   const [userData, setUserData] = useState(null);

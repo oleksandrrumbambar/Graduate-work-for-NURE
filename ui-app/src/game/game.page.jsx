@@ -63,7 +63,7 @@ const Game = () => {
         <div>
           <Grid container>
             <Grid item xs={12} md={6}>
-              <FriendActivity friendActivity={gameData.friend_activity} />
+              <FriendActivity friendActivity={gameData} />
             </Grid>
             <Grid item xs={12} md={6}>
               <GameRating rating={gameData.rating} ageRatingImage={gameData.age_rating_image} ageRating={gameData.age_rating} />

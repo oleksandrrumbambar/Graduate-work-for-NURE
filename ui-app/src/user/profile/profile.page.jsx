@@ -135,7 +135,7 @@ function Profile() {
                       {activeTab === 'activity' && (
                         <>
                           <Typography variant="h6" style={{ paddingBottom: "15px" }}>Activity</Typography>
-                          <Activity />
+                          <Activity userData = {userData} />
                         </>
                       )}
                       {activeTab === 'statistics' && (

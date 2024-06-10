@@ -1,25 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import './library.page.css'; // Додамо файл стилів для оформлення
+import axios from 'axios';
+import './library.page.css';
 import Sidebar from './sidebar/sidebar';
 import LibraryGrid from './grid/grid';
 
-const games = [
-  { id: 1, name: 'The Witcher 3', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/header.jpg?t=1716793585', completion: '100%' },
-  { id: 2, name: 'Cyberpunk 2077', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg?t=1715334241', completion: '100%' },
-  { id: 3, name: 'Hades', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1145360/header.jpg?t=1715722799', completion: '100%' },
-  { id: 4, name: 'Half-Life 2', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/220/header.jpg?t=1699003213', completion: '100%' },
-  { id: 5, name: 'Hotline Miami', icon: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/219150/header.jpg?t=1686261983', completion: '100%' },
-  // Додайте інші ігри за потребою
-];
-
 function LibraryPage() {
+  const [games, setGames] = useState([]);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        // Replace `id` with the actual user ID
+        const id = 123; // Example user ID
+        const userGamesResponse = await axios.get(`http://localhost:8070/user/games?user_id=${localStorage.getItem('id_user')}`);
+        const userLibrary = userGamesResponse.data;
+
+        if (!userLibrary || userLibrary.length === 0) {
+          setGames([]); // If userLibrary is empty or undefined, clear the games list
+          return;
+        }
+
+        const gamePromises = userLibrary.games.map((gameId) => (
+          axios.get(`http://localhost:8050/game?id=${gameId}`)
+        ));
+        const gameResponses = await Promise.all(gamePromises);
+        const gameData = gameResponses.map((response) => response.data);
+        setGames(gameData);
+      } catch (error) {
+        setGames([]);
+        console.error('Error fetching games:', error);
+      }
+    };
+    fetchGames();
+    }, []); // Empty dependency array to fetch games only once on component mount
+    
+    console.log(games);
   return (
     <div className='library'>
-      <Sidebar />
-      <LibraryGrid />
+      <Sidebar games={games}/>
+      <LibraryGrid games={games} />
     </div>
   );
 }
 
 export default LibraryPage;
-

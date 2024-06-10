@@ -17,6 +17,7 @@ import FriendActivity from './friend-activity/friend.activity';
 import GameRating from './game-rating/game.rating';
 import GameLanguage from './game-language/game.language';
 import SystemRequirements from './system-requirements/system.requirements';
+import ReviewGamePage from './review/review.page.game';
 
 const Game = () => {
   const [gameData, setGameData] = useState({});
@@ -74,6 +75,8 @@ const Game = () => {
         <GameLanguage languages={gameData.languages} />
         <hr />
         <SystemRequirements systemRequirements={gameData.system_requirements} />
+        <hr />
+        <ReviewGamePage gameData={gameData} />
       </div>
     </ThemeProvider>
   );

@@ -36,6 +36,11 @@ function Header() {
           {userRole === 'authorized' ? (
             <>
               <Typography variant="h6" component="div">
+                <Button component={RouterLink} to="/review" color="inherit" underline="none">
+                  Review
+                </Button>
+              </Typography>
+              <Typography variant="h6" component="div">
                 <Button component={RouterLink} to="/basket" color="inherit" underline="none">
                   Basket
                 </Button>
@@ -60,7 +65,7 @@ function Header() {
                   Friend
                 </Button>
               </Typography>
-              <Button color="inherit" onClick={handleSignOut}>
+              <Button component={RouterLink} to="/" color="inherit" onClick={handleSignOut}>
                 Sign Out
               </Button>
             </>

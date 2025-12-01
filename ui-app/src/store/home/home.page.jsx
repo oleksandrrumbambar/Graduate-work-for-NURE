@@ -19,6 +19,7 @@ function Home() {
   return (
     <div className="home">
       <TopSlider />
+      <TopSlider />
       <hr></hr>
       <TableAllGames />
     </div>

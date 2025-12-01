@@ -18,7 +18,7 @@ var reviewCollection *mongo.Collection
 var libraryCollection *mongo.Collection
 
 func connectToMongoDB() {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:BmRKBfE83jJMfcau@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
 	if err != nil {
 		fmt.Println("Error creating MongoDB client:", err)
 		return

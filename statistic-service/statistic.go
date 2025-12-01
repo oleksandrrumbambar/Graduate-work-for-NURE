@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+    "sort"
 
 	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,7 +31,7 @@ var reviewCollection *mongo.Collection
 
 func connectToMongoDB() {
 	var err error
-	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:BmRKBfE83jJMfcau@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
 	if err != nil {
 		fmt.Println("Помилка створення MongoDB клієнта:", err)
 		return
@@ -207,6 +208,7 @@ func main() {
 		AllowCredentials: true,
 	})
 	http.HandleFunc("/user/statistics", userStatisticsHandler)
+	http.HandleFunc("/user/recommendations", getUserRecommendationsHandler)
 
 	handler := c.Handler(http.DefaultServeMux)
 
@@ -751,4 +753,86 @@ func getReviewStats(userID string) (ReviewStats, error) {
 	}, nil
 }
 
+// getUserRecommendationsHandler повертає 5 ігор, що найбільше підходять за вподобаннями користувача
+func getUserRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
+    userID := r.URL.Query().Get("user_id")
+    if userID == "" {
+        http.Error(w, "Missing user_id parameter", http.StatusBadRequest)
+        return
+    }
 
+    // 1. Отримуємо ваги жанрів користувача
+    genreWeights, err := getGenreWeights(userID)
+    if err != nil {
+        http.Error(w, "Failed to get genre weights: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // 2. Отримуємо всі ігри
+    cursor, err := gameCollection.Find(context.Background(), bson.M{})
+    if err != nil {
+        http.Error(w, "Failed to fetch games", http.StatusInternalServerError)
+        return
+    }
+    defer cursor.Close(context.Background())
+
+    var games []Game
+    if err := cursor.All(context.Background(), &games); err != nil {
+        http.Error(w, "Failed to decode games", http.StatusInternalServerError)
+        return
+    }
+
+    // 3. Отримуємо список ігор користувача, щоб не рекомендувати те, що він вже має
+    var userLibrary Library
+    _ = libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&userLibrary)
+
+    owned := make(map[string]bool)
+    for _, gid := range userLibrary.Games {
+        owned[gid] = true
+    }
+
+    // 4. Розрахунок скору для кожної гри
+    type ScoredGame struct {
+        Game Game
+        Score float64
+    }
+
+    var scored []ScoredGame
+
+    for _, g := range games {
+        if owned[g.ID.Hex()] {
+            continue // не рекомендуємо те, що вже є
+        }
+
+        var score float64 = 0
+        for _, genre := range g.Genre {
+            if w, ok := genreWeights[genre]; ok {
+                score += w
+            }
+        }
+
+        if score > 0 {
+            scored = append(scored, ScoredGame{Game: g, Score: score})
+        }
+    }
+
+    // 5. Сортуємо за скором
+    sort.Slice(scored, func(i, j int) bool {
+        return scored[i].Score > scored[j].Score
+    })
+
+    // 6. Топ-5
+    limit := 5
+    if len(scored) < 5 {
+        limit = len(scored)
+    }
+
+    topGames := make([]Game, limit)
+    for i := 0; i < limit; i++ {
+        topGames[i] = scored[i].Game
+    }
+
+    // 7. Відповідь
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(topGames)
+}

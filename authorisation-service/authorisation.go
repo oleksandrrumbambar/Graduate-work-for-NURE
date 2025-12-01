@@ -24,7 +24,7 @@ var wishlistCollection *mongo.Collection
 
 func connectToMongoDB() {
 	var err error
-	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:yeaqxhqPjaw1P8S8@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
+	client, err = mongo.NewClient(options.Client().ApplyURI("mongodb+srv://sashapena1337:BmRKBfE83jJMfcau@users.bi8zdnp.mongodb.net/?retryWrites=true&w=majority&appName=Users"))
 	if err != nil {
 		fmt.Println("Помилка створення MongoDB клієнта:", err)
 		return

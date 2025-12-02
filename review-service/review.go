@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"math"
 	"net/http"
 	"time"
+	"strings"
 
 	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -45,33 +49,256 @@ func connectToMongoDB() {
 	libraryCollection = client.Database("Users").Collection("Library")
 }
 
+
+type MLAnalysis struct {
+	Sentiment        string  `bson:"sentiment" json:"sentiment"`
+	SentimentScore   float64 `bson:"sentiment_score" json:"sentiment_score"`
+	FraudScore       float64 `bson:"fraud_score" json:"fraud_score"`
+	IsSuspicious     bool    `bson:"is_suspicious" json:"is_suspicious"`
+	IsDuplicate      bool    `bson:"is_duplicate" json:"is_duplicate"`
+	DuplicateSim     float64 `bson:"duplicate_similarity" json:"duplicate_similarity"`
+	TemporalAnomaly  bool    `bson:"is_temporal_anomaly" json:"is_temporal_anomaly"`
+	TemporalReason   string  `bson:"temporal_reason" json:"temporal_reason"`
+}
+
 type Review struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	UserID     string             `bson:"user_id" json:"user_id"`
 	GameID     string             `bson:"game_id" json:"game_id"`
 	ReviewText string             `bson:"review_text" json:"review_text"`
 	Rating     int                `bson:"rating" json:"rating"`
+
+	// NEW FIELDS
+	CreatedAt time.Time  `bson:"created_at" json:"created_at"`
+	ML        MLAnalysis `bson:"ml_analysis" json:"ml_analysis"`
 }
 
-func main() {
-	connectToMongoDB()
 
-	http.HandleFunc("/review", handleReviewRequests)
-	http.HandleFunc("/review/users/games", getGamesForUser)
-	http.HandleFunc("/reviews/user", getReviewsByUserID)
-	http.HandleFunc("/reviews/game", getReviewsByGameID)
-	
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
-		AllowedHeaders:   []string{"Content-Type"},
-		AllowCredentials: true,
+type MLRequest struct {
+	ReviewText string `json:"review_text"`
+	Rating     int    `json:"rating"`
+	UserID     string `json:"user_id"`
+	GameID     string `json:"game_id"`
+}
+
+type MLResponse struct {
+	FraudScore     float64 `json:"fraud_score"`
+	IsSuspicious   bool    `json:"is_suspicious"`
+	Sentiment      string  `json:"sentiment"`
+	SentimentScore float64 `json:"sentiment_score"`
+}
+
+func callMLService(text string, rating int, userID, gameID string) (*MLResponse, error) {
+	body, _ := json.Marshal(MLRequest{
+		ReviewText: text, Rating: rating, UserID: userID, GameID: gameID,
 	})
 
-	handler := c.Handler(http.DefaultServeMux)
+	resp, err := http.Post("http://localhost:9001/analyse_review", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
-	fmt.Println("Server running on port 8090...")
-	http.ListenAndServe(":8090", handler)
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	var result MLResponse
+	json.Unmarshal(respBody, &result)
+
+	return &result, nil
+}
+
+
+
+func cosineSimilarity(a, b []float64) float64 {
+	var dot, normA, normB float64
+	for i := range a {
+		dot += a[i] * b[i]
+		normA += a[i] * a[i]
+		normB += b[i] * b[i]
+	}
+	if normA == 0 || normB == 0 {
+		return 0
+	}
+	return dot / (math.Sqrt(normA) * math.Sqrt(normB))
+}
+
+func computeTFIDFVectors(texts []string) ([][]float64, []string) {
+	tokenize := func(s string) []string {
+		s = strings.ToLower(s)
+		s = strings.ReplaceAll(s, ".", " ")
+		s = strings.ReplaceAll(s, ",", " ")
+		s = strings.ReplaceAll(s, "!", " ")
+		s = strings.ReplaceAll(s, "?", " ")
+		return strings.Fields(s)
+	}
+
+	vocabSet := map[string]struct{}{}
+	tokenized := [][]string{}
+
+	for _, txt := range texts {
+		toks := tokenize(txt)
+		tokenized = append(tokenized, toks)
+		for _, t := range toks {
+			vocabSet[t] = struct{}{}
+		}
+	}
+
+	// Vocabulary slice
+	vocab := make([]string, 0, len(vocabSet))
+	for t := range vocabSet {
+		vocab = append(vocab, t)
+	}
+
+	df := make([]int, len(vocab))
+
+	for i, word := range vocab {
+		for _, toks := range tokenized {
+			for _, t := range toks {
+				if t == word {
+					df[i]++
+					break
+				}
+			}
+		}
+	}
+
+	N := float64(len(texts))
+
+	vectors := make([][]float64, len(texts))
+
+	for i, toks := range tokenized {
+		vec := make([]float64, len(vocab))
+
+		// Count TF
+		tf := map[string]float64{}
+		for _, t := range toks {
+			tf[t]++
+		}
+
+		for j, word := range vocab {
+			// TF
+			tfreq := tf[word] / float64(len(toks))
+
+			// IDF
+			idf := math.Log((N + 1) / (float64(df[j]) + 1))
+
+			vec[j] = tfreq * idf
+		}
+
+		vectors[i] = vec
+	}
+
+	return vectors, vocab
+}
+
+
+func detectDuplicate(newText string, oldTexts []string) (float64, bool) {
+	texts := append([]string{newText}, oldTexts...)
+
+	vectors, _ := computeTFIDFVectors(texts)
+
+	target := vectors[0]
+	maxSim := 0.0
+
+	for i := 1; i < len(vectors); i++ {
+		sim := cosineSimilarity(target, vectors[i])
+		if sim > maxSim {
+			maxSim = sim
+		}
+	}
+
+	return maxSim, maxSim > 0.85
+}
+
+func detectTemporalAnomaly(gameID, newSent string, newScore float64) (bool, string) {
+	if newScore <= 0.5 {
+		return false, ""
+	}
+
+	window := time.Now().Add(-5 * time.Minute)
+
+	cursor, _ := reviewCollection.Find(context.Background(), bson.M{
+		"game_id":    gameID,
+		"created_at": bson.M{"$gte": window},
+	})
+
+	defer cursor.Close(context.Background())
+
+	countPos := 0
+	countNeg := 0
+
+	for cursor.Next(context.Background()) {
+		var r Review
+		cursor.Decode(&r)
+
+		if r.ML.SentimentScore <= 0.5 {
+			continue
+		}
+
+		if r.ML.Sentiment == "positive" {
+			countPos++
+		}
+		if r.ML.Sentiment == "negative" {
+			countNeg++
+		}
+	}
+
+	if countPos >= 5 && newSent == "positive" {
+		return true, "many-positive"
+	}
+
+	if countNeg >= 5 && newSent == "negative" {
+		return true, "many-negative"
+	}
+
+	return false, ""
+}
+
+
+func addReview(w http.ResponseWriter, r *http.Request) {
+	var review Review
+	err := json.NewDecoder(r.Body).Decode(&review)
+	if err != nil {
+		http.Error(w, "Invalid data format", http.StatusBadRequest)
+		return
+	}
+
+	review.CreatedAt = time.Now()
+
+	ml, err := callMLService(review.ReviewText, review.Rating, review.UserID, review.GameID)
+	if err != nil {
+		http.Error(w, "ML service error", 500)
+		return
+	}
+
+	review.ML.Sentiment = ml.Sentiment
+	review.ML.SentimentScore = ml.SentimentScore
+	review.ML.FraudScore = ml.FraudScore
+	review.ML.IsSuspicious = ml.IsSuspicious
+
+	var existing []string
+	cur, _ := reviewCollection.Find(context.Background(), bson.M{"game_id": review.GameID})
+	for cur.Next(context.Background()) {
+		var ex Review
+		cur.Decode(&ex)
+		existing = append(existing, ex.ReviewText)
+	}
+
+	sim, isDup := detectDuplicate(review.ReviewText, existing)
+	review.ML.DuplicateSim = sim
+	review.ML.IsDuplicate = isDup
+
+	isTemp, reason := detectTemporalAnomaly(review.GameID, review.ML.Sentiment, review.ML.SentimentScore)
+	review.ML.TemporalAnomaly = isTemp
+	review.ML.TemporalReason = reason
+
+	_, err = reviewCollection.InsertOne(context.Background(), review)
+	if err != nil {
+		http.Error(w, "Error adding review", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func handleReviewRequests(w http.ResponseWriter, r *http.Request) {
@@ -89,27 +316,9 @@ func handleReviewRequests(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func addReview(w http.ResponseWriter, r *http.Request) {
-	var review Review
-	err := json.NewDecoder(r.Body).Decode(&review)
-	if err != nil {
-		http.Error(w, "Invalid data format", http.StatusBadRequest)
-		return
-	}
-
-	_, err = reviewCollection.InsertOne(context.Background(), review)
-	if err != nil {
-		http.Error(w, "Error adding review", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-}
-
 func getReviews(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	userID := query.Get("user_id")
-	gameID := query.Get("game_id")
+	userID := r.URL.Query().Get("user_id")
+	gameID := r.URL.Query().Get("game_id")
 
 	var filter bson.M
 
@@ -130,10 +339,7 @@ func getReviews(w http.ResponseWriter, r *http.Request) {
 	defer cursor.Close(context.Background())
 
 	var reviews []Review
-	if err = cursor.All(context.Background(), &reviews); err != nil {
-		http.Error(w, "Error processing reviews", http.StatusInternalServerError)
-		return
-	}
+	cursor.All(context.Background(), &reviews)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(reviews)
@@ -144,44 +350,29 @@ func updateReviewByUserIDAndGameID(w http.ResponseWriter, r *http.Request) {
 	userID := vars.Get("user_id")
 	gameID := vars.Get("game_id")
 
-	var updatedReview Review
-	err := json.NewDecoder(r.Body).Decode(&updatedReview)
-	if err != nil {
-		http.Error(w, "Invalid data format", http.StatusBadRequest)
-		return
-	}
+	var updated Review
+	json.NewDecoder(r.Body).Decode(&updated)
 
 	filter := bson.M{"user_id": userID, "game_id": gameID}
 	update := bson.M{
 		"$set": bson.M{
-			"review_text": updatedReview.ReviewText,
-			"rating":      updatedReview.Rating,
+			"review_text": updated.ReviewText,
+			"rating":      updated.Rating,
 		},
 	}
 
-	_, err = reviewCollection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		http.Error(w, "Error updating review", http.StatusInternalServerError)
-		return
-	}
-
+	reviewCollection.UpdateOne(context.Background(), filter, update)
 	w.WriteHeader(http.StatusOK)
 }
 
 func deleteReviewByUserIDAndGameID(w http.ResponseWriter, r *http.Request) {
-	vars := r.URL.Query()
-	userID := vars.Get("user_id")
-	gameID := vars.Get("game_id")
+	userID := r.URL.Query().Get("user_id")
+	gameID := r.URL.Query().Get("game_id")
 
 	filter := bson.M{"user_id": userID, "game_id": gameID}
+	res, _ := reviewCollection.DeleteOne(context.Background(), filter)
 
-	result, err := reviewCollection.DeleteOne(context.Background(), filter)
-	if err != nil {
-		http.Error(w, "Error deleting review", http.StatusInternalServerError)
-		return
-	}
-
-	if result.DeletedCount == 0 {
+	if res.DeletedCount == 0 {
 		http.Error(w, "Review not found", http.StatusNotFound)
 		return
 	}
@@ -190,103 +381,58 @@ func deleteReviewByUserIDAndGameID(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGamesForUser(w http.ResponseWriter, r *http.Request) {
-	// Отримання параметра user_id з URL-запиту
 	userID := r.URL.Query().Get("user_id")
 
-	// Перевірка, чи вказаний параметр
-	if userID == "" {
-		http.Error(w, "User_id is required", http.StatusBadRequest)
+	var library struct {
+		Games []string `bson:"games"`
+	}
+
+	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&library)
+	if err != nil {
+		json.NewEncoder(w).Encode([]string{})
 		return
 	}
 
-	// Пошук ігор в бібліотеці користувача
-	var userLibrary struct {
-		Games []string `bson:"games"`
-	}
-	err := libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&userLibrary)
-	if err != nil {
+	gamesWith := []string{}
+	gamesWithout := []string{}
+
+	for _, gameID := range library.Games {
+		err := reviewCollection.FindOne(context.Background(), bson.M{"user_id": userID, "game_id": gameID}).Err()
+
 		if err == mongo.ErrNoDocuments {
-			// Якщо бібліотека користувача порожня, відправляємо порожній список
-			jsonResponse, _ := json.Marshal([]string{})
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(jsonResponse)
-			return
+			gamesWithout = append(gamesWithout, gameID)
 		} else {
-			http.Error(w, "Failed to fetch user library", http.StatusInternalServerError)
-			return
+			gamesWith = append(gamesWith, gameID)
 		}
 	}
 
-	// Створення списку ігор з відгуками і без
-	gamesWithReviews := make([]string, 0)
-	gamesWithoutReviews := make([]string, 0)
-
-	// Перевірка наявності відгуку для кожної гри в бібліотеці користувача
-	for _, gameID := range userLibrary.Games {
-		var review struct {
-			ID primitive.ObjectID `bson:"_id,omitempty"`
-		}
-		err = reviewCollection.FindOne(context.Background(), bson.M{"user_id": userID, "game_id": gameID}).Decode(&review)
-		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				// Якщо відгук відсутній, додаємо гру до списку без відгуків
-				gamesWithoutReviews = append(gamesWithoutReviews, gameID)
-			} else {
-				http.Error(w, "Failed to fetch reviews", http.StatusInternalServerError)
-				return
-			}
-		} else {
-			// Якщо відгук для гри знайдено, додаємо гру до списку з відгуками
-			gamesWithReviews = append(gamesWithReviews, gameID)
-		}
-	}
-
-	// Відправка списків ігор з відгуками і без відгуків
-	response := map[string][]string{
-		"gamesWithReviews":    gamesWithReviews,
-		"gamesWithoutReviews": gamesWithoutReviews,
-	}
-	jsonResponse, _ := json.Marshal(response)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonResponse)
+	json.NewEncoder(w).Encode(map[string][]string{
+		"gamesWithReviews":    gamesWith,
+		"gamesWithoutReviews": gamesWithout,
+	})
 }
 
 func getReviewsByUserID(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
 
-	if userID == "" {
-		http.Error(w, "User_id is required", http.StatusBadRequest)
-		return
-	}
-
-	filter := bson.M{"user_id": userID}
-	cursor, err := reviewCollection.Find(context.Background(), filter)
+	cursor, err := reviewCollection.Find(context.Background(), bson.M{"user_id": userID})
 	if err != nil {
 		http.Error(w, "Error fetching reviews", http.StatusInternalServerError)
 		return
 	}
+
 	defer cursor.Close(context.Background())
 
 	var reviews []Review
-	if err = cursor.All(context.Background(), &reviews); err != nil {
-		http.Error(w, "Error processing reviews", http.StatusInternalServerError)
-		return
-	}
+	cursor.All(context.Background(), &reviews)
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(reviews)
 }
 
 func getReviewsByGameID(w http.ResponseWriter, r *http.Request) {
 	gameID := r.URL.Query().Get("game_id")
 
-	if gameID == "" {
-		http.Error(w, "Game_id is required", http.StatusBadRequest)
-		return
-	}
-
-	filter := bson.M{"game_id": gameID}
-	cursor, err := reviewCollection.Find(context.Background(), filter)
+	cursor, err := reviewCollection.Find(context.Background(), bson.M{"game_id": gameID})
 	if err != nil {
 		http.Error(w, "Error fetching reviews", http.StatusInternalServerError)
 		return
@@ -294,11 +440,30 @@ func getReviewsByGameID(w http.ResponseWriter, r *http.Request) {
 	defer cursor.Close(context.Background())
 
 	var reviews []Review
-	if err = cursor.All(context.Background(), &reviews); err != nil {
-		http.Error(w, "Error processing reviews", http.StatusInternalServerError)
-		return
-	}
+	cursor.All(context.Background(), &reviews)
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(reviews)
+}
+
+
+
+func main() {
+	connectToMongoDB()
+
+	http.HandleFunc("/review", handleReviewRequests)
+	http.HandleFunc("/review/users/games", getGamesForUser)
+	http.HandleFunc("/reviews/user", getReviewsByUserID)
+	http.HandleFunc("/reviews/game", getReviewsByGameID)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(http.DefaultServeMux)
+
+	fmt.Println("Server running on port 8090...")
+	http.ListenAndServe(":8090", handler)
 }

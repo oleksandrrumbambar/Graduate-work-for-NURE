@@ -29,7 +29,6 @@ const Game = () => {
       .then(response => {
         setGameData(response.data);
         setIsLoading(false);
-        console.log(response.data);
       })
       .catch(error => {
         console.error('Error fetching game data:', error);

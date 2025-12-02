@@ -17,7 +17,6 @@ function FranchisePage() {
     const { id } = useParams();
 
     useEffect(() => {
-        console.log(id);
 
         // Fetch all games
         fetch('http://localhost:8050/games')

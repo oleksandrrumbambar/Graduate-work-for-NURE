@@ -72,7 +72,6 @@ const GameHeader = ({ gameData }) => {
 
   const handleViewCart = () => {
 
-    console.log(gameData.id);
     const userId = localStorage.getItem('id_user');
     debugger
     fetch(`http://localhost:8070/basket?user_id=${userId}`, {

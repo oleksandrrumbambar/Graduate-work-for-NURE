@@ -55,7 +55,7 @@ const useStyles = makeStyles({
     sideImage: {
         display: 'block',
         margin: 'auto',
-        height: '120px',
+        height: '195px',
         width: '100%',
         objectFit: 'cover'
     },
@@ -101,7 +101,7 @@ function TopSlider() {
                                             <CardMedia
                                                 component="img"
                                                 alt={game.name}
-                                                height="409px"
+                                                height="559px"
                                                 image={activeMainImage[game.id]}
                                                 title={game.name}
                                             />

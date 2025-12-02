@@ -3,6 +3,7 @@ import './home.page.css';
 import { Link } from "react-router-dom";
 import TableAllGames from './table-all-games/table.all.games';
 import TopSlider from './top-slider/top.slider';
+import RecSlider from './rec/rec.slider';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const darkTheme = createTheme({
@@ -18,7 +19,7 @@ function Home() {
 
   return (
     <div className="home">
-      <TopSlider />
+      <RecSlider />
       <TopSlider />
       <hr></hr>
       <TableAllGames />

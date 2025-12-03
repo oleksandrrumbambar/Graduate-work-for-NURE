@@ -210,49 +210,40 @@ func detectDuplicate(newText string, oldTexts []string) (float64, bool) {
 	return maxSim, maxSim > 0.85
 }
 
-func detectTemporalAnomaly(gameID, newSent string, newScore float64) (bool, string) {
-	if newScore <= 0.5 {
-		return false, ""
-	}
+var negativeStreak = make(map[string]int) 
+var positiveStreak = make(map[string]int)
 
-	window := time.Now().Add(-5 * time.Minute)
+func detectTemporalAnomaly(gameID, newSent string) (bool, string) {
 
-	cursor, _ := reviewCollection.Find(context.Background(), bson.M{
-		"game_id":    gameID,
-		"created_at": bson.M{"$gte": window},
-	})
+    const negThreshold = 5
+    const posThreshold = 245
 
-	defer cursor.Close(context.Background())
+    fmt.Println("---- detectTemporalAnomaly ----")
+    fmt.Println("Game:", gameID, "| New:", newSent)
 
-	countPos := 0
-	countNeg := 0
+    if newSent == "negative" {
+        negativeStreak[gameID]++                      // збільшуєм негатив
+        fmt.Println("NEGATIVE streak:", negativeStreak[gameID])
 
-	for cursor.Next(context.Background()) {
-		var r Review
-		cursor.Decode(&r)
+        if negativeStreak[gameID] >= negThreshold {
+            fmt.Println("ANOMALY many-negative")
+            return true, "many-negative"
+        }
+    }
 
-		if r.ML.SentimentScore <= 0.5 {
-			continue
-		}
+    if newSent == "positive" {
+        positiveStreak[gameID]++                      // збільшуєм позитив
+        fmt.Println("POSITIVE streak:", positiveStreak[gameID])
 
-		if r.ML.Sentiment == "positive" {
-			countPos++
-		}
-		if r.ML.Sentiment == "negative" {
-			countNeg++
-		}
-	}
+        if positiveStreak[gameID] >= posThreshold {
+            fmt.Println("ANOMALY many-positive")
+            return true, "many-positive"
+        }
+    }
 
-	if countPos >= 5 && newSent == "positive" {
-		return true, "many-positive"
-	}
-
-	if countNeg >= 5 && newSent == "negative" {
-		return true, "many-negative"
-	}
-
-	return false, ""
+    return false, ""
 }
+
 
 
 func addReview(w http.ResponseWriter, r *http.Request) {
@@ -288,7 +279,7 @@ func addReview(w http.ResponseWriter, r *http.Request) {
 	review.ML.DuplicateSim = sim
 	review.ML.IsDuplicate = isDup
 
-	isTemp, reason := detectTemporalAnomaly(review.GameID, review.ML.Sentiment, review.ML.SentimentScore)
+	isTemp, reason := detectTemporalAnomaly(review.GameID, review.ML.Sentiment)
 	review.ML.TemporalAnomaly = isTemp
 	review.ML.TemporalReason = reason
 

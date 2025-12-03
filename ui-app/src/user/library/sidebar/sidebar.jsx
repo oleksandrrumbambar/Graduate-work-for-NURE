@@ -29,14 +29,12 @@ function Sidebar({ games }) {
         <input type='text' placeholder='Пошук' value={searchTerm} onChange={handleSearchChange} />
       </div>
       {Object.keys(filteredGames).map(category => (
-        // Check if there are filtered games in the category before rendering it
         filteredGames[category].length > 0 && (
           <div className='category' key={category}>
             <h3>{category} ({filteredGames[category].length})</h3>
             <ul>
               {filteredGames[category].map(game => (
                 <li key={game.id}>
-                  <img src={game.icon} alt={game.name} />
                   {game.name}
                 </li>
               ))}

@@ -753,86 +753,140 @@ func getReviewStats(userID string) (ReviewStats, error) {
 	}, nil
 }
 
-// getUserRecommendationsHandler повертає 5 ігор, що найбільше підходять за вподобаннями користувача
+
+
 func getUserRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
-    userID := r.URL.Query().Get("user_id")
-    if userID == "" {
-        http.Error(w, "Missing user_id parameter", http.StatusBadRequest)
-        return
-    }
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "Missing user_id parameter", http.StatusBadRequest)
+		return
+	}
 
-    // 1. Отримуємо ваги жанрів користувача
-    genreWeights, err := getGenreWeights(userID)
-    if err != nil {
-        http.Error(w, "Failed to get genre weights: "+err.Error(), http.StatusInternalServerError)
-        return
-    }
+	genreWeights, err := getGenreWeights(userID)
+	if err != nil {
+		http.Error(w, "Failed to get genre weights: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    // 2. Отримуємо всі ігри
-    cursor, err := gameCollection.Find(context.Background(), bson.M{})
-    if err != nil {
-        http.Error(w, "Failed to fetch games", http.StatusInternalServerError)
-        return
-    }
-    defer cursor.Close(context.Background())
+	cursor, err := gameCollection.Find(context.Background(), bson.M{})
+	if err != nil {
+		http.Error(w, "Failed to fetch games", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.Background())
 
-    var games []Game
-    if err := cursor.All(context.Background(), &games); err != nil {
-        http.Error(w, "Failed to decode games", http.StatusInternalServerError)
-        return
-    }
+	var games []Game
+	if err := cursor.All(context.Background(), &games); err != nil {
+		http.Error(w, "Failed to decode games", http.StatusInternalServerError)
+		return
+	}
 
-    // 3. Отримуємо список ігор користувача, щоб не рекомендувати те, що він вже має
-    var userLibrary Library
-    _ = libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&userLibrary)
+	var userLibrary Library
+	_ = libraryCollection.FindOne(context.Background(), bson.M{"user": userID}).Decode(&userLibrary)
 
-    owned := make(map[string]bool)
-    for _, gid := range userLibrary.Games {
-        owned[gid] = true
-    }
+	owned := make(map[string]bool)
+	for _, gid := range userLibrary.Games {
+		owned[gid] = true
+	}
 
-    // 4. Розрахунок скору для кожної гри
-    type ScoredGame struct {
-        Game Game
-        Score float64
-    }
 
-    var scored []ScoredGame
+	type WeightConfig struct {
+		GenresWeight      float64
+		SalesWeight       float64
+		ReviewsWeight     float64
+		RatingsWeight     float64
+		FriendBoost       float64
+		OthersReviewBoost float64
+		FranchiseBoost    float64
+		AnomalyMultiplier float64
+	}
 
-    for _, g := range games {
-        if owned[g.ID.Hex()] {
-            continue // не рекомендуємо те, що вже є
-        }
+	cfg := WeightConfig{
+		GenresWeight:      0.55,
+		SalesWeight:       0.2,
+		ReviewsWeight:     0.1,
+		RatingsWeight:     0.1,
+		FriendBoost:       1.5,
+		OthersReviewBoost: 1.0,
+		FranchiseBoost:    1.5,
+		AnomalyMultiplier: 0.0,
+	}
 
-        var score float64 = 0
-        for _, genre := range g.Genre {
-            if w, ok := genreWeights[genre]; ok {
-                score += w
-            }
-        }
+	sumWeights := cfg.GenresWeight + cfg.SalesWeight + cfg.ReviewsWeight + cfg.RatingsWeight
+	if sumWeights == 0 {
+		sumWeights = 1
+	}
 
-        if score > 0 {
-            scored = append(scored, ScoredGame{Game: g, Score: score})
-        }
-    }
+	normalized := map[string]float64{
+		"genres":  cfg.GenresWeight / sumWeights,
+		"sales":   cfg.SalesWeight / sumWeights,
+		"reviews": cfg.ReviewsWeight / sumWeights,
+		"ratings": cfg.RatingsWeight / sumWeights,
+	}
 
-    // 5. Сортуємо за скором
-    sort.Slice(scored, func(i, j int) bool {
-        return scored[i].Score > scored[j].Score
-    })
+	friendBoostMap := make(map[string]float64)
+	franchiseBonus := make(map[string]float64)
+	anomalyFlags := make(map[string]bool)
+	for _, g := range games {
+		friendBoostMap[g.ID.Hex()] = cfg.OthersReviewBoost
+		anomalyFlags[g.ID.Hex()] = false
 
-    // 6. Топ-5
-    limit := 5
-    if len(scored) < 5 {
-        limit = len(scored)
-    }
+		if g.Franchise != "" {
+			franchiseBonus[g.ID.Hex()] = cfg.FranchiseBoost
+		} else {
+			franchiseBonus[g.ID.Hex()] = 1.0
+		}
+	}
+	diagnosticScore := 0.0
+	for _, g := range games {
+		diagnosticScore += normalized["genres"]
+		diagnosticScore += normalized["sales"] * 0.1
+		diagnosticScore += friendBoostMap[g.ID.Hex()] * 0.01
+		diagnosticScore += franchiseBonus[g.ID.Hex()] * 0.01
+		if anomalyFlags[g.ID.Hex()] {
+			diagnosticScore *= cfg.AnomalyMultiplier
+		}
+	}
+    _ = diagnosticScore
+	type ScoredGame struct {
+		Game  Game
+		Score float64
+	}
 
-    topGames := make([]Game, limit)
-    for i := 0; i < limit; i++ {
-        topGames[i] = scored[i].Game
-    }
+	var scored []ScoredGame
 
-    // 7. Відповідь
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(topGames)
+	for _, g := range games {
+		if owned[g.ID.Hex()] {
+			continue
+		}
+
+		var score float64 = 0
+		for _, genre := range g.Genre {
+			if w, ok := genreWeights[genre]; ok {
+				score += w
+			}
+		}
+
+		if score > 0 {
+			scored = append(scored, ScoredGame{Game: g, Score: score})
+		}
+	}
+
+	sort.Slice(scored, func(i, j int) bool {
+		return scored[i].Score > scored[j].Score
+	})
+
+	limit := 5
+	if len(scored) < 5 {
+		limit = len(scored)
+	}
+
+	topGames := make([]Game, limit)
+	for i := 0; i < limit; i++ {
+		topGames[i] = scored[i].Game
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(topGames)
 }
+
